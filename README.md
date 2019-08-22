@@ -20,6 +20,8 @@ Follow the linux instructions but before running there is one extra step. Naviga
 
 wtf is a license anyway, pfft. Just use the code, I don't really care. Just don't sell it for money. Keep any changes free and open source.
 
+See licence.txt.
+
 ### Processing
 
 This program uses the Processing library (https://processing.org/) and I have included a copy of their licence at licence-processing.txt.
