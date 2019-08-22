@@ -1,0 +1,693 @@
+//TODO
+//Wire selection only works in wire mode false;
+//move more things from game class to seperate classes?
+//refactor/clean up Game class and other classes - especially now that the wire copying works, it's very messy
+//comment all classes - IMPORTANT now that I won't be sole dev
+//done: None
+
+//Ctrl+c, ctrl+v - add new component at a slightly different place;
+//Wires only change wire mode if toggleing it, and spawn with wrong wire mode
+//wires don;t get selected correctly or ctrlz
+//Add way to 'deselect' selected connection if you clicked by accident
+//make connections easier to click on?
+
+
+package com.cospox.elecsim;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import processing.core.PApplet;
+import processing.event.MouseEvent;
+
+public class Game {
+	public ArrayList<Component> components = new ArrayList<Component>();
+	public ArrayList<Wire> wires = new ArrayList<Wire>();
+	
+	public ArrayList<Component> selectedComponents = new ArrayList<Component>();
+	public ArrayList<Wire>      selectedWires      = new ArrayList<Wire>();
+	
+	public ArrayList<Object> copyBuffer = new ArrayList<Object>();
+	
+	public String[] selectedTool = {"select", "wire", "component"};
+	public String selectedComponent = "AndGate";
+	public Connection selectedConnection = null;
+	private Component selectedConComponent = null;
+	public String loadedFileName = null;
+	public ArrayList<HistorySave> history = new ArrayList<HistorySave>();
+	
+	public Vector translate = new Vector();
+	public float zoom = 1;
+	public hud hud;
+	public PApplet parent;
+	
+	private KeyHandler keys = new KeyHandler();
+	public HashMap<String, Boolean> states = new HashMap<String, Boolean>();
+	
+	public Game(PApplet applet) {
+		this.parent = applet;
+		this.hud = new hud(applet);
+		
+		this.states.put("canExit", true);
+		this.states.put("saving", false);
+		this.states.put("wireMode", false);
+		this.states.put("exitAfterSave", false);
+		this.states.put("halt", false);
+		
+		//load previously loaded filename && open that file on startup
+		String filename = this.fileToString("assets/gamedata/save.txt");
+		if (filename != "" && filename != "\n" && filename != " ") {
+			this.loadFromFile(filename);
+		}
+	}
+
+	public void draw(PApplet applet) {
+		if (this.states.get("halt")) { return; }
+		//update the logic 10 times per frame, reduces noticable lag
+		//May cause performance issues, maybe add setting to change updates per frame?
+		for (int i = 0; i < 10; i++) { this.update(); }
+		
+		applet.pushMatrix();
+		applet.translate(this.translate.x, this.translate.y);
+		applet.scale(this.zoom);
+		applet.background(255);
+		
+		for (Wire w: this.wires) { w.draw(applet); }
+		
+		//draw line from selectedConnection to mouse
+		if (this.selectedConnection != null) {
+			applet.line((applet.mouseX - this.translate.x) / this.zoom,
+					    (applet.mouseY - this.translate.y) / this.zoom, 
+					    this.selectedConnection.pos.x,
+					    this.selectedConnection.pos.y);
+		}
+		
+		for (Component c: this.components) {
+			//calculate screen x and y values
+			int adjusted_x = (int)(this.translate.x + c.pos.x * this.zoom);
+			int adjusted_y = (int)(this.translate.y + c.pos.y * this.zoom);
+			//check if component is on screen, otherwise don't draw it
+			if (adjusted_x > -60 * this.zoom &&
+					adjusted_x < applet.width + 60 * this.zoom &&
+					adjusted_y > -60 * this.zoom &&
+					adjusted_y < applet.height + 60 * this.zoom) {
+				c.draw(applet);
+			}	
+		}
+		applet.popMatrix();
+		this.hud.draw(applet, this);
+		if (this.states.get("saving")) {
+			applet.noStroke();
+			applet.fill(200, 200, 200, 150);
+			applet.rect(0, 0, applet.width, applet.height);
+			applet.fill(255);
+			applet.stroke(50);
+			int bw = 80;
+			int bh = 30;
+			applet.rect(applet.width / 2 - bw / 2, applet.height / 2 - bh / 2, bw, bh, 12);
+			applet.rect(applet.width / 2 - bw / 2, applet.height / 2 + 20, bw, bh, 12);
+			applet.rect(applet.width / 2 - bw / 2, applet.height / 2 + 56, bw, bh, 12);
+			applet.textSize(20);
+			applet.fill(0);
+			int px = -bw / 2 + 15; //padding x
+			int py = -bh / 2 + 21; //padding y
+			applet.text("Save", applet.width / 2 + px, applet.height / 2 + py);
+			applet.text("Exit", applet.width / 2 + px + 5, applet.height / 2 + py + 36);
+			applet.text("Cancel", applet.width / 2 + px - 8, applet.height / 2 + py + 71);
+			applet.textSize(12);
+		}
+	}
+	
+	public boolean dispose() {
+		//run on quit by main class 
+		//write last filename loaded to file. Return whether the sketch should actually exit or not
+		this.writeToFile("assets/gamedata/save.txt", this.loadedFileName == null ? "" : this.loadedFileName);
+		if (!this.states.get("canExit")) {
+			this.promptToSave();
+			return false;
+		} else { return true; }
+	}
+	
+	public void promptToSave() {
+		this.states.put("saving", true);
+	}
+	
+	public void error(String text) {
+		System.out.println(text);
+	}
+	
+	public void saveAs() {
+		this.parent.selectOutput("Select file...", "saveAsCallback", null, this);
+	}
+	
+	public void open() {
+		this.parent.selectInput("Select file...", "openFileCallback", null, this);
+	}
+	
+	public void saveAsCallback(File selection) {
+		if (selection == null) { return; }
+		String fileName = selection.getAbsoluteFile().toString();
+		this.saveToFile(fileName);
+		this.loadedFileName = fileName;
+		this.states.put("canExit", true);
+	}
+	
+	public void openFileCallback(File selection) {
+		if (selection == null) { return; }
+		String fileName = selection.getAbsoluteFile().toString();
+		this.states.put("halt", true);
+		this.loadFromFile(fileName);
+		this.loadedFileName = fileName;
+		this.states.put("halt", false);
+	}
+	
+	public void clear() {
+		this.components.clear();
+		this.wires.clear();
+	}
+	
+	public void updateUndoHistory() {
+		this.history.add(new HistorySave(new ArrayList<>(this.components),
+				                         new ArrayList<>(this.wires)));
+	}
+	
+	public void undo() {
+		//get last history point and replace components and wires
+		int end = this.history.size() - 1;
+		if (end < 0) { return; }
+		HistorySave h = this.history.get(end);
+		this.history.remove(end);
+		h.restore(this);
+	}
+	public String generateText() {
+		//generate string version of every component to save to file
+		String file = "";
+		for (Component c: this.components) {
+			file += this.componentToString(c) + "\n";
+		}
+		for (Wire w: this.wires) {
+			file += this.wireToString(w) + "\n";
+		}
+		return file;
+	}
+	
+	public void save() {
+		if (this.loadedFileName == null) {
+			this.saveAs();
+		} else {
+			this.saveToFile(this.loadedFileName);
+		}
+		this.states.put("canExit", true);
+	}
+	
+	public void saveToFile(String fileName) {
+		//TODO GZIP - compress file
+		String file = this.generateText();
+		
+		FileWriter out = null;
+		try {
+			out = new FileWriter(fileName);
+			out.write(file);
+			out.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (out != null) {
+				try {
+					out.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	public void load(String file) {
+		this.components.clear();
+		this.wires.clear();
+		for (String line: file.split("\n")) {
+			if (line == "") { continue; }
+			switch (line.split("\\(")[0]) {
+			case "Wire":
+				this.unpackWireCall(line);
+				break;
+			default:
+				this.addNewComponent(line.split("\\(")[0], this.unpackComponentCall(line));
+			}
+		}
+	}
+	
+	public void writeToFile(String filename, String text) {
+		PrintWriter w = this.parent.createWriter(filename);
+		if (w == null) {
+			System.out.println("Error: file not found: " + filename);
+			return;
+		}
+		w.write(text);
+	}
+	
+	public String fileToString(String filename) {
+		BufferedReader reader = this.parent.createReader(filename);
+		String file = "";
+		String line = "";
+		try {
+			line = reader.readLine();
+		} 
+		catch (IOException e) {
+			this.error("Error: Game files are missing");
+			line = null;
+		} catch (NullPointerException e) {
+			this.error("Error: Game files are missing");
+			line = null;
+		}
+
+		while (line != null) {
+			try {
+				line = reader.readLine();
+				file += line;
+			} 
+			catch (IOException e) {
+				this.error("Error: Game files are missing");
+				line = null;
+			}
+		}
+		return file;
+	}
+	
+	public void loadFromFile(String filename) {
+		//TODO GZIP - compress file
+		FileReader in = null;
+		String out = null;
+		try {
+			in = new FileReader(filename);
+			int c;
+			out = "";
+			while ((c = in.read()) != -1) {
+				out += (char)c;
+			}
+			in.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (out != null) {
+				try {
+					in.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		if (out != null) {
+			this.load(out);
+		}
+	}
+	
+	public void unpackWireCall(String call) {
+		//convert 'Wire(args)' into needed info to construct a Wire object
+		String data = call.replace("Wire(", "").replace(");", "");
+		String s = data.split(",")[0].replace("[", "").replace("]", "");
+		String e = data.split(",")[1].replace("[", "").replace("]", "");
+		Vector spos = new Vector(Integer.parseInt(s.split(" ")[0]),
+								 Integer.parseInt(s.split(" ")[1]));
+		Vector epos = new Vector(Integer.parseInt(e.split(" ")[0]),
+				 				 Integer.parseInt(e.split(" ")[1]));
+		this.wires.add(new Wire(this.components.get((int)spos.x).connections[(int)spos.y],
+								this.components.get((int)epos.x).connections[(int)epos.y],
+								this.components.get((int)spos.x),
+								this.components.get((int)epos.x)));
+	}
+	
+	public Vector unpackComponentCall(String call) {
+		//convert 'Component(args)' into needed data to reconstruct a Component object
+		String vectorCall = call.split("\\(")[2].split("\\)")[0];
+		float x = Float.parseFloat(vectorCall.split(",")[0].replace(" ", ""));
+		float y = Float.parseFloat(vectorCall.split(",")[1].replace(" ", ""));
+		return new Vector(x, y);
+	}
+	
+	public String componentToString(Component c) {
+		String out = "";
+		out += c.TYPE + "(";
+		out += c.pos.toString();
+		out += ");";
+		return out;
+	}
+	
+	public String wireToString(Wire w) {
+		String out = "";
+		out += "Wire(";
+		out += "[" + w.getPosition(w.s) + "],";
+		out += "[" + w.getPosition(w.e) + "]);";
+		return out;
+	}
+	
+	private void selectAll() {
+		this.selectedComponents.clear();
+		for (Component c: this.components) {
+			this.selectedComponents.add(c);
+			c.select();
+		}
+	}
+	
+	private void deSelectAll() {
+		this.selectedComponents.clear();
+		for (Component c: this.components) {
+			this.selectedComponents.remove(c);
+			c.deSelect();
+		}
+	}
+	
+	private void copy() {
+		this.copyBuffer.clear();
+		for (Component c: this.selectedComponents) {
+			this.copyBuffer.add(c);
+		}
+		for (Wire w: this.selectedWires) {
+			this.copyBuffer.add(w);
+		}
+	}
+
+	private void paste() {
+		//deselect the currently selected components & wires
+		for (Component c: this.selectedComponents) {
+			c.deSelect();
+		}
+		for (Wire w: this.selectedWires) {
+			w.deSelect();
+		}
+		
+		this.selectedComponents.clear();
+		this.selectedWires.clear();
+		
+		//Iterate over every object in the buffer
+		for (Object o: this.copyBuffer) {
+			if (o.getClass().getSuperclass() == Component.class) {
+				//do stuff with o as a component
+				Component c = (Component)o;
+				
+				//add new component at +20x +20y from the original
+				String name = c.TYPE;
+				Vector pos = new Vector(c.pos.x + 20, c.pos.y + 20);
+				this.addNewComponent(name, pos);
+				this.selectedComponents.add(this.components.get(this.components.size() - 1));
+				this.components.get(this.components.size() - 1).select();
+				c.externalFlags.put("newcopy", this.components.get(this.components.size() - 1));
+				
+			} else if (o.getClass() == Wire.class) {
+				//do stuff with o as wire
+				Wire w = (Wire)o;
+
+				Component c1 = w.refs;
+				Component c2 = w.refe;
+				Component newc1 = (Component) c1.externalFlags.get("newcopy");
+				Component newc2 = (Component) c2.externalFlags.get("newcopy");
+				if (newc1 == null || newc2 == null) {
+					//at least one of the start/end component wasn't copied,
+					//so we can't copy the wire
+					continue;
+				}
+				Wire n = new Wire(newc1.connections[w.s.posInComponent], newc2.connections[w.e.posInComponent], newc1, newc2);
+				
+				this.wires.add(n);
+				this.selectedWires.add(n);
+				n.select();
+				
+				//remove the referance
+				c1.externalFlags.put("newcopy", null);
+				c2.externalFlags.put("newcopy", null);
+				
+			} else {
+				//we don't know what it is so error
+				this.error("Error: expected type Class<Wire> or Class<Component>, got " + o.getClass());
+			}
+		}
+		this.copy();
+	}
+
+	private void componentInteraction(PApplet applet) {
+		//add wires & components to screen
+		if (this.selectedTool[0] == "wire") {
+			Connection conn = null;
+			Component  comp = null;
+			
+			for (Component c: this.components) {
+				conn = c.getClickedConnection(new Vector(applet.mouseX, applet.mouseY),
+						this.zoom, this.translate);
+				if (conn != null) { comp = c; break; }
+			}
+			
+			if (conn != null) {
+				if (this.selectedConnection == null) {
+					this.selectedConnection = conn;
+					this.selectedConComponent = comp;
+				} else {
+					if (!conn.equals(this.selectedConnection)) {
+						//this.updateUndoHistory(); //TODO check
+						this.wires.add(new Wire(conn, this.selectedConnection, comp, this.selectedConComponent));
+						this.states.put("canExit", false);
+						this.selectedConnection = null;
+						this.updateUndoHistory();
+					}
+				}
+			}
+			
+			
+		} else if (this.selectedTool[0] == "component" && !this.hud.isInsideHUDArea(
+				new Vector(applet.mouseX, applet.mouseY), 
+				new Vector(applet.width, applet.height))) {
+			Vector pos = new Vector((applet.mouseX - this.translate.x) / this.zoom, (applet.mouseY - this.translate.y) / this.zoom);
+			this.states.put("canExit", false);
+			this.updateUndoHistory();
+			this.addNewComponent(this.selectedComponent, pos);
+		}
+	}
+	
+	public void selectComponentsInRect(Vector a, Vector b) {
+		Vector x = new Vector((a.x - this.translate.x) / this.zoom,
+				(a.y - this.translate.y) / this.zoom);
+		Vector y = new Vector((b.x - this.translate.x) / this.zoom,
+				(b.y - this.translate.y) / this.zoom);
+		
+		//find (x, y) of top left corner
+		//and the width and height of the rectangle
+		//by brute force: we don't know which corner 
+		//Vector a and Vector b represent.
+		float rx, ry, w, h;
+		if (y.x > x.x) {
+			w  = y.x - x.x;
+			rx = x.x;
+		} else {
+			w  = x.x - y.x;
+			rx = y.x;
+		}
+		if (y.y > x.y) {
+			h  = y.y - x.y;
+			ry = x.y;
+		} else {
+			h  = x.y - y.y;
+			ry = y.y;
+		}
+		
+		for (Component c: this.components) {
+			//if it's inside the rectangle & it hasn't been selected yet,
+			//select it. Else deselect it.
+			if (HelperFunctions.isInsideRect(c.pos.x, c.pos.y, rx, ry, w, h)) {
+				c.select();
+				if (!this.selectedComponents.contains(c)) {
+					this.selectedComponents.add(c);
+				}
+			} else {
+				c.deSelect();
+				this.selectedComponents.remove(c);
+			}
+		}
+		for (Wire wire: this.wires) {
+			//do the same for the wires
+			if (HelperFunctions.isInsideRect(wire.s.pos.x, wire.s.pos.y, rx, ry, w, h)) {
+				wire.select();
+				if (!this.selectedWires.contains(wire)) {
+					this.selectedWires.add(wire);
+				}
+			} else {
+				wire.deSelect();
+				this.selectedWires.remove(wire);
+			}
+		}
+	}
+	
+	private void addNewComponent(String name, Vector pos) {
+		int posInArray = this.components.size(); //end of array - pos that new component will be in
+		this.components.add(this.generateNewComponent(name, pos, posInArray));
+	}
+	
+	private Component generateNewComponent(String name, Vector pos, int posInArray) {
+		switch (name) {
+		//Add new components
+		case "Switch":
+			return new Switch(pos, posInArray);
+		case "AndGate":
+			return new AndGate(pos, posInArray);
+		case "OrGate":
+			return new OrGate(pos, posInArray);
+		case "XorGate":
+			return new XorGate(pos, posInArray);
+		case "NotGate":
+			return new NotGate(pos, posInArray);
+		case "Joint":
+			return new Joint(pos, posInArray);
+		default:
+			this.error("Unknown component '" + name + "'");
+			return null;
+		}
+	}
+	
+	public void mouseClicked(PApplet applet) {
+		this.hud.mouseClicked(applet, this);
+		if (this.states.get("saving")) {
+			int bw = 80;
+			int bh = 30;
+			if (HelperFunctions.isInsideRect(applet.mouseX, applet.mouseY, 
+					applet.width / 2 - bw / 2, applet.height / 2 - bh / 2, bw, bh)) {
+				this.save();
+				this.states.put("canExit", true);
+				applet.exit();
+			}
+			if (HelperFunctions.isInsideRect(applet.mouseX, applet.mouseY,
+					applet.width / 2 - bw / 2, applet.height / 2 + 20, bw, bh)) {
+				this.states.put("canExit", true);
+				applet.exit();
+			}
+			if (HelperFunctions.isInsideRect(applet.mouseX, applet.mouseY,
+					applet.width / 2 - bw / 2, applet.height / 2 + 56, bw, bh)) {
+				this.states.put("saving", false);
+			}
+			return;
+		}
+		
+		if (this.selectedTool[0] == "select") {
+			//try to select components/wires
+			for (Wire w: this.wires) {
+				w.onMousePressed(applet, this.translate, this.zoom);
+				if (w.selected) { this.selectedWires.add(w); }
+				else { this.selectedWires.remove(w); }
+			}
+			
+			for (Component c: this.components) {
+				if (c.isMouseIntersecting(new Vector(applet.mouseX, applet.mouseY), this.zoom, this.translate)) {
+					c.select();
+					if (!this.selectedComponents.contains(c)) {
+						this.selectedComponents.add(c);
+					}
+				} else {
+					if (!this.keys.ctrl()) {
+						c.deSelect();
+						this.selectedComponents.remove(c);
+					}
+				}
+			}
+		}
+
+		for (Component c: this.components) {
+			c.onMousePressed(applet, this.zoom, this.translate);
+		}
+
+		this.componentInteraction(applet);
+	}
+
+	public void mouseDragged(MouseEvent event, PApplet applet) {
+		//if it's the right click button then pan
+		if (event.getButton() == 39) {
+			this.translate.x += applet.mouseX - applet.pmouseX;
+			this.translate.y += applet.mouseY - applet.pmouseY;
+			
+		//otheriwse, if the select tool is selected and the HUD isn't blocking component movements
+		} else if (this.selectedTool[0] == "select" && !this.hud.canSelect
+				&& event.getButton() == 37) {
+			this.states.put("canExit", false);
+			for (Component c: this.selectedComponents) {
+				//move components with mousepointer
+				c.setX(c.pos.x + (applet.mouseX - applet.pmouseX) * 1 / this.zoom);
+				c.setY(c.pos.y + (applet.mouseY - applet.pmouseY) * 1 / this.zoom);
+			}
+		}
+	}
+	
+	public void mousePressed(PApplet applet) {
+		this.hud.mousePressed(applet, this);
+	}
+	
+	public void mouseReleased(PApplet applet) {
+		this.hud.mouseReleased();
+	}
+
+	public void mouseWheel(MouseEvent event, PApplet applet) {
+		//magic
+		this.translate.x -= applet.mouseX;
+		this.translate.y -= applet.mouseY;
+		float delta = (float)(event.getCount() < 0 ? 1.05 : event.getCount() > 0 ? 1.0/1.05 : 1.0);
+		this.zoom *= delta;
+		this.translate.x *= delta;
+		this.translate.y *= delta;
+		this.translate.x += applet.mouseX;
+		this.translate.y += applet.mouseY;
+	}
+	
+	public void keyReleased(char key, int keyCode) {
+		this.keys.released(keyCode, key);
+	}
+	
+	public void keyPressed(char key, int keyCode) {
+		this.keys.pressed(keyCode, key);
+		
+		if (this.keys.get('u') && !this.keys.shift() && !this.keys.ctrl()) { this.update(); }				//u = update
+		if (this.keys.get('t') && !this.keys.shift() && !this.keys.ctrl()) { this.switchSelectedTool(); }   //t = toggle tool
+		if (this.keys.ctrl() && !this.keys.shift() && this.keys.get(83)) { this.save(); }					//ctrl+s = save
+		if (this.keys.ctrl() && this.keys.shift() && this.keys.get(83)) { this.saveAs(); }					//ctrl+shift+s = save as
+		if (this.keys.ctrl() && this.keys.shift() && this.keys.get(65)) { this.deSelectAll(); }				//ctrl+shift+a = deselect all
+		if (this.keys.ctrl() && !this.keys.shift() && this.keys.get(80)) { this.clear(); }					//ctrl+p = clear
+		if (this.keys.ctrl() && !this.keys.shift() && this.keys.get(79)) { this.open(); }					//ctrl+o = open
+		if (this.keys.ctrl() && !this.keys.shift() && this.keys.get(90)) { this.undo(); }					//ctrl+z = undo
+		if (this.keys.ctrl() && !this.keys.shift() && this.keys.get(67)) { this.copy(); }					//ctrl+c = copy
+		if (this.keys.ctrl() && !this.keys.shift() && this.keys.get(86)) { this.paste(); }					//ctrl+v = paste
+		if (this.keys.ctrl() && !this.keys.shift() && this.keys.get(65)) { this.selectAll(); }				//ctrl+a = select all
+		if (this.keys.get('y') && !this.keys.shift() && !this.keys.ctrl()) {								//y = switch wire mode
+			this.states.put("wireMode", !this.states.get("wireMode"));
+			for (Wire w: this.wires) {
+				w.wireMode = this.states.get("wireMode");
+			}
+		}
+
+		if (this.keys.get(8) || this.keys.get(147) && !this.keys.shift() && !this.keys.ctrl()) {			//del or backspace = delete selected components
+			for (Component c: this.selectedComponents) {
+				this.components.remove(c);
+			}
+			for (Wire w: this.selectedWires) {
+				this.wires.remove(w);
+			}
+			this.selectedWires.clear();
+			this.selectedComponents.clear();
+		}
+	}
+
+	public void switchSelectedTool() {
+		//rotate the selected tool array round 1 place
+		String temp = this.selectedTool[0];
+		this.selectedTool[0] = this.selectedTool[1];
+		this.selectedTool[1] = this.selectedTool[2];
+		this.selectedTool[2] = temp;
+	}
+
+	private void update() {
+		//update logic on all components
+		for (Component c: this.components) { c.update(); }
+		for (int i = 0; i < 100; i++) {
+			for (Wire w: this.wires) { w.update(); }
+		}
+	}
+}
