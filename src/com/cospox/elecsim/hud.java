@@ -37,7 +37,10 @@ public class hud {
 	}
 
 	public void draw(PApplet applet, Game game) {
-		if (applet.mousePressed && game.selectedTool[0] == "select" && this.canSelect && applet.mouseButton == 37 /*left button*/) {
+		if (applet.mousePressed
+				&& game.selectedTool[0] == "select"
+				&& this.canSelect
+				&& applet.mouseButton == 37 /*left button*/) {
 			//draw 'selection' rectangle
 			applet.stroke(255, 150, 150, 128);
 			applet.fill(255, 100, 100, 50);
@@ -161,7 +164,7 @@ public class hud {
 			game.switchSelectedTool();
 		}
 		if (applet.mouseX >= applet.width - 20 && applet.mouseY <= 80 && applet.mouseY >= 60) {
-			game.states.put("wireMode", !game.states.get("wireMode"));
+			game.setWireMode(!game.getWireMode());
 		}
 		
 		//Add new components

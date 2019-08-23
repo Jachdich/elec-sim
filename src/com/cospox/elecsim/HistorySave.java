@@ -9,7 +9,4 @@ public class HistorySave {
 		this.wires = wires_;
 		this.components = components_;
 	}
-	public void restore(Game game) {
-		game.components = this.components;
-	}
 }

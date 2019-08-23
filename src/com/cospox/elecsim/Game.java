@@ -1,16 +1,19 @@
+//PIANO ACOMPANIMENT THING GET IT NOW
+
+
+
+
 //TODO
-//Wire selection only works in wire mode false;
 //move more things from game class to seperate classes?
 //refactor/clean up Game class and other classes - especially now that the wire copying works, it's very messy
 //comment all classes - IMPORTANT now that I won't be sole dev
 //done: None
 
-//Ctrl+c, ctrl+v - add new component at a slightly different place;
-//Wires only change wire mode if toggleing it, and spawn with wrong wire mode
-//wires don;t get selected correctly or ctrlz
+//wires don;t get selected correctly?
 //Add way to 'deselect' selected connection if you clicked by accident
 //make connections easier to click on?
-
+//Wire selection only works in wire mode false;
+//Add undo support for dragging/moving components?
 
 package com.cospox.elecsim;
 
@@ -24,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import processing.core.PApplet;
+import processing.core.PConstants;
 import processing.event.MouseEvent;
 
 public class Game {
@@ -134,6 +138,17 @@ public class Game {
 		} else { return true; }
 	}
 	
+	public void setWireMode(boolean mode) {
+		this.states.put("wireMode", mode);
+		for (Wire w: this.wires) {
+			w.wireMode = mode;
+		}
+	}
+	
+	public boolean getWireMode() {
+		return this.states.get("wireMode");
+	}
+	
 	public void promptToSave() {
 		this.states.put("saving", true);
 	}
@@ -183,7 +198,8 @@ public class Game {
 		if (end < 0) { return; }
 		HistorySave h = this.history.get(end);
 		this.history.remove(end);
-		h.restore(this);
+		this.wires = h.wires;
+		this.components = h.components;
 	}
 	public String generateText() {
 		//generate string version of every component to save to file
@@ -448,11 +464,12 @@ public class Game {
 					this.selectedConComponent = comp;
 				} else {
 					if (!conn.equals(this.selectedConnection)) {
-						//this.updateUndoHistory(); //TODO check
+						this.updateUndoHistory(); //TODO check
 						this.wires.add(new Wire(conn, this.selectedConnection, comp, this.selectedConComponent));
+						this.wires.get(this.wires.size() - 1).wireMode = this.states.get("wireMode");
 						this.states.put("canExit", false);
 						this.selectedConnection = null;
-						this.updateUndoHistory();
+						//this.updateUndoHistory();
 					}
 				}
 			}
@@ -549,6 +566,12 @@ public class Game {
 	
 	public void mouseClicked(PApplet applet) {
 		this.hud.mouseClicked(applet, this);
+		
+		//right-click clears selected component
+		if (applet.mouseButton == PConstants.RIGHT) {
+			this.selectedConnection = null;
+		}
+		
 		if (this.states.get("saving")) {
 			int bw = 80;
 			int bh = 30;
@@ -573,9 +596,16 @@ public class Game {
 		if (this.selectedTool[0] == "select") {
 			//try to select components/wires
 			for (Wire w: this.wires) {
-				w.onMousePressed(applet, this.translate, this.zoom);
-				if (w.selected) { this.selectedWires.add(w); }
-				else { this.selectedWires.remove(w); }
+				boolean shouldSelect = w.isMouseIntersecting(applet, this.translate, this.zoom);
+				if (shouldSelect) {
+					w.select();
+					this.selectedWires.add(w);
+				} else {
+					if (!this.keys.ctrl()) {
+						w.deSelect();
+						this.selectedWires.remove(w);
+					}
+				}
 			}
 			
 			for (Component c: this.components) {
@@ -663,7 +693,9 @@ public class Game {
 			}
 		}
 
-		if (this.keys.get(8) || this.keys.get(147) && !this.keys.shift() && !this.keys.ctrl()) {			//del or backspace = delete selected components
+		if (this.keys.get(8) || this.keys.get(147) && !this.keys.shift() && !this.keys.ctrl()) {
+			//del or backspace = delete selected components
+			this.updateUndoHistory();
 			for (Component c: this.selectedComponents) {
 				this.components.remove(c);
 			}

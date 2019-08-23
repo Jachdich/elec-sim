@@ -50,19 +50,20 @@ public class Wire {
 		return Integer.toString(c.posInComponents) + " " +  Integer.toString(c.posInComponent);
 	}
 
-	public void onMousePressed(PApplet applet, Vector translate, float zoom) {
+	public boolean isMouseIntersecting(PApplet applet, Vector translate, float zoom) {
 		Vector poss = new Vector(translate.x + this.s.pos.x * zoom,
 								 translate.y + this.s.pos.y * zoom);
 		Vector pose = new Vector(translate.x + this.e.pos.x * zoom,
 								 translate.y + this.e.pos.y * zoom);
+		//check which point is *really* the start/end
 		Vector a = poss.x >= pose.x ? poss : pose;
 		Vector b = new Vector(applet.mouseX, applet.mouseY);
 		Vector c = poss.x > pose.x ? pose : poss;
 		
 		if (this.wireMode) {
-			this.selected = false;
+			return false; //TODO wire mode true selection algorithm
 		} else {
-			this.selected = HelperFunctions.isPointOnLine(a, b, c, (float)0.8 * zoom);
+			return HelperFunctions.isPointOnLine(a, b, c, (float)0.8 * zoom);
 		}
 	}
 	
