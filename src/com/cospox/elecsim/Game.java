@@ -10,10 +10,10 @@
 
 //Taken from GitHub - close issue and delete line once 1000% fixed. Some are not on GitHub (IDK work it out yourself)
 
-//Add way to 'deselect' selected connection if you clicked by accident
 //make connections easier to click on?
 //Wire selection only works in wire mode false;
 //Add undo support for dragging/moving components?
+//Does not load last loaded file on startup - nothing written to save.txt. Also check if file exists before loading.
 
 //Component suggestions:
 //High source
@@ -144,8 +144,10 @@ public class Game {
 	public boolean dispose() {
 		//run on quit by main class 
 		//write last filename loaded to file. Return whether the sketch should actually exit or not
-		this.writeToFile("assets/gamedata/save.txt", this.loadedFileName == null ? "" : this.loadedFileName);
+		this.writeToFile("assets/gamedata/save.txt", (this.loadedFileName == null ? "" : this.loadedFileName));
+		System.out.println("assets/gamedata/save.txt is: " + (this.loadedFileName == null ? "" : this.loadedFileName));
 		if (!this.states.get("canExit")) {
+			System.out.println("Prompted to save");
 			this.promptToSave();
 			return false;
 		} else { return true; }
@@ -184,6 +186,9 @@ public class Game {
 		this.saveToFile(fileName);
 		this.loadedFileName = fileName;
 		this.states.put("canExit", true);
+		if (this.states.get("saving")) { //TODO messy IDK
+			this.dispose();
+		}
 	}
 	
 	public void openFileCallback(File selection) {
@@ -228,11 +233,12 @@ public class Game {
 	
 	public void save() {
 		if (this.loadedFileName == null) {
+			this.states.put("canExit", false);
 			this.saveAs();
 		} else {
 			this.saveToFile(this.loadedFileName);
+			this.states.put("canExit", true);
 		}
-		this.states.put("canExit", true);
 	}
 	
 	public void saveToFile(String fileName) {
@@ -598,17 +604,21 @@ public class Game {
 			int bh = 30;
 			if (HelperFunctions.isInsideRect(applet.mouseX, applet.mouseY, 
 					applet.width / 2 - bw / 2, applet.height / 2 - bh / 2, bw, bh)) {
-				this.save();
+				
+				//save & exit
 				this.states.put("canExit", true);
+				this.save();
 				applet.exit();
 			}
 			if (HelperFunctions.isInsideRect(applet.mouseX, applet.mouseY,
 					applet.width / 2 - bw / 2, applet.height / 2 + 20, bw, bh)) {
 				this.states.put("canExit", true);
+				//exit
 				applet.exit();
 			}
 			if (HelperFunctions.isInsideRect(applet.mouseX, applet.mouseY,
 					applet.width / 2 - bw / 2, applet.height / 2 + 56, bw, bh)) {
+				//cancel
 				this.states.put("saving", false);
 			}
 			return;
