@@ -1,19 +1,29 @@
-//PIANO ACOMPANIMENT THING GET IT NOW
-
-
-
-
 //TODO
+
+//Some issues here are mirrored from GitHub. These are mostly user-level issues/bugs.
+//Code style bugs/issues/anything else goes here.
+
 //move more things from game class to seperate classes?
 //refactor/clean up Game class and other classes - especially now that the wire copying works, it's very messy
 //comment all classes - IMPORTANT now that I won't be sole dev
 //done: None
 
-//wires don;t get selected correctly?
+//Taken from GitHub - close issue and delete line once 1000% fixed. Some are not on GitHub (IDK work it out yourself)
+
 //Add way to 'deselect' selected connection if you clicked by accident
 //make connections easier to click on?
 //Wire selection only works in wire mode false;
 //Add undo support for dragging/moving components?
+
+//Component suggestions:
+//High source
+//Low source (needed for explicitness)
+//Clock - adjustable freq?????? HOW
+//Logic blocks/ICs/logic mode and (existing)IC mode/User-created ICs/packages/things like rsnor IDK
+
+//Feature suggestion:
+//Snap to grid mode
+
 
 package com.cospox.elecsim;
 
@@ -37,9 +47,9 @@ public class Game {
 	public ArrayList<Component> selectedComponents = new ArrayList<Component>();
 	public ArrayList<Wire>      selectedWires      = new ArrayList<Wire>();
 	
-	public ArrayList<Object> copyBuffer = new ArrayList<Object>();
+	private ArrayList<Object> copyBuffer = new ArrayList<Object>();
 	
-	public String[] selectedTool = {"select", "wire", "component"};
+	public String[] selectedTool = {"select", "wire", "component"}; //TODO make it just a string IDK
 	public String selectedComponent = "AndGate";
 	public Connection selectedConnection = null;
 	private Component selectedConComponent = null;
@@ -48,8 +58,8 @@ public class Game {
 	
 	public Vector translate = new Vector();
 	public float zoom = 1;
-	public hud hud;
-	public PApplet parent;
+	private hud hud;
+	private PApplet parent;
 	
 	private KeyHandler keys = new KeyHandler();
 	public HashMap<String, Boolean> states = new HashMap<String, Boolean>();
@@ -401,6 +411,9 @@ public class Game {
 		this.selectedComponents.clear();
 		this.selectedWires.clear();
 		
+		ArrayList<Component> queue = new ArrayList<Component>(); //we can't remove the referances (in old component) to the
+		//new component immediately, more than one wire may need to use it. So add to queue to remove in bulk.
+		
 		//Iterate over every object in the buffer
 		for (Object o: this.copyBuffer) {
 			if (o.getClass().getSuperclass() == Component.class) {
@@ -434,15 +447,20 @@ public class Game {
 				this.selectedWires.add(n);
 				n.select();
 				
-				//remove the referance
-				c1.externalFlags.put("newcopy", null);
-				c2.externalFlags.put("newcopy", null);
+				//add to queue to remove the referance
+				queue.add(c1);
+				queue.add(c2);
 				
 			} else {
 				//we don't know what it is so error
 				this.error("Error: expected type Class<Wire> or Class<Component>, got " + o.getClass());
 			}
 		}
+		for (Component c: queue) {
+			c.externalFlags.put("newcopy", null);
+		}
+		queue.clear();
+		
 		this.copy();
 	}
 
