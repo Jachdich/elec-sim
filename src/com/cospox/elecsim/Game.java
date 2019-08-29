@@ -7,13 +7,13 @@
 //refactor/clean up Game class and other classes - especially now that the wire copying works, it's very messy
 //comment all classes - IMPORTANT now that I won't be sole dev
 //done: None
+//FIX THE FREEKING FILE INCONSISTANCY
 
 //Taken from GitHub - close issue and delete line once 1000% fixed. Some are not on GitHub (IDK work it out yourself)
 
-//make connections easier to click on?
-//Wire selection only works in wire mode false;
-//Add undo support for dragging/moving components?
-//Does not load last loaded file on startup - nothing written to save.txt. Also check if file exists before loading.
+//make connections easier to click on? #2
+//Wire selection only works in wire mode false; #8
+//Does not load last loaded file on startup - nothing written to save.txt. Also check if file exists before loading. #6
 
 //Component suggestions:
 //High source
@@ -22,15 +22,8 @@
 //Logic blocks/ICs/logic mode and (existing)IC mode/User-created ICs/packages/things like rsnor IDK
 
 //Feature suggestion:
-//Snap to grid mode
-
-//!IMPORTANT
-//Save on exit menu DOESNT WORK if not ALREADY SAVED HELP PLEASE FUTURE ME LOOK INTO PROBLEM
-//fixed but make it exit after saving.
-//Connections move wrongly after ctrl-z-ing movement of componnets
-
-//Bug reports/info
-//HELP ME I'M DYING OF CONFUSION! when undo'ing a component move it doesn't move back thing update thing so it doesn't work !
+//Snap to grid mode 
+//Settings menu & logic iterations per frame setting #9
 
 package com.cospox.elecsim;
 
@@ -192,7 +185,7 @@ public class Game {
 		this.loadedFileName = fileName;
 		this.states.put("canExit", true);
 		if (this.states.get("saving")) { //TODO messy IDK
-			this.dispose();
+			this.parent.exit();
 		}
 	}
 	
