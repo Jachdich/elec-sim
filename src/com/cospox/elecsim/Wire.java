@@ -73,4 +73,12 @@ public class Wire {
 	public void deSelect() {
 		this.selected = false;
 	}
+	
+	public Wire copy() {
+		Wire n =  new Wire(this.s, this.e, this.refs, this.refe);
+		n.selected = this.selected;
+		n.wireMode = this.wireMode;
+		n.on = this.on;
+		return n;
+	}
 }

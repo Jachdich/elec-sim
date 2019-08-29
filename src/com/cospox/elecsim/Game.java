@@ -26,7 +26,11 @@
 
 //!IMPORTANT
 //Save on exit menu DOESNT WORK if not ALREADY SAVED HELP PLEASE FUTURE ME LOOK INTO PROBLEM
+//fixed but make it exit after saving.
+//Connections move wrongly after ctrl-z-ing movement of componnets
 
+//Bug reports/info
+//HELP ME I'M DYING OF CONFUSION! when undo'ing a component move it doesn't move back thing update thing so it doesn't work !
 
 package com.cospox.elecsim;
 
@@ -76,6 +80,7 @@ public class Game {
 		this.states.put("wireMode", false);
 		this.states.put("exitAfterSave", false);
 		this.states.put("halt", false);
+		this.states.put("draggingComponents", false);
 		
 		//load previously loaded filename && open that file on startup
 		String filename = this.fileToString("assets/gamedata/save.txt");
@@ -87,7 +92,7 @@ public class Game {
 	public void draw(PApplet applet) {
 		if (this.states.get("halt")) { return; }
 		//update the logic 10 times per frame, reduces noticable lag
-		//May cause performance issues, maybe add setting to change updates per frame?
+		//TODO May cause performance issues, maybe add setting to change updates per frame?
 		for (int i = 0; i < 10; i++) { this.update(); }
 		
 		applet.pushMatrix();
@@ -206,8 +211,7 @@ public class Game {
 	}
 	
 	public void updateUndoHistory() {
-		this.history.add(new HistorySave(new ArrayList<>(this.components),
-				                         new ArrayList<>(this.wires)));
+		this.history.add(new HistorySave(this.components, this.wires));
 	}
 	
 	public void undo() {
@@ -218,7 +222,17 @@ public class Game {
 		this.history.remove(end);
 		this.wires = h.wires;
 		this.components = h.components;
+		//as the components have been copied, selectedComponents is inacurate.
+		this.selectedComponents.clear();
+		
+		for (Component c: this.components) {
+			c.updateConnectionsPos();
+			if (c.selected) {
+				this.selectedComponents.add(c);
+			}
+		}
 	}
+	
 	public String generateText() {
 		//generate string version of every component to save to file
 		String file = "";
@@ -668,9 +682,16 @@ public class Game {
 			this.translate.y += applet.mouseY - applet.pmouseY;
 			
 		//otheriwse, if the select tool is selected and the HUD isn't blocking component movements
+		//i.e. the HUD is drawing the 'selection square'
 		} else if (this.selectedTool[0] == "select" && !this.hud.canSelect
 				&& event.getButton() == 37) {
 			this.states.put("canExit", false);
+			
+			if (!this.states.get("draggingComponents")) {
+				this.updateUndoHistory();
+				this.states.put("draggingComponents", true);
+			}
+			
 			for (Component c: this.selectedComponents) {
 				//move components with mousepointer
 				c.setX(c.pos.x + (applet.mouseX - applet.pmouseX) * 1 / this.zoom);
@@ -685,6 +706,9 @@ public class Game {
 	
 	public void mouseReleased(PApplet applet) {
 		this.hud.mouseReleased();
+		if (this.states.get("draggingComponents")) {
+			this.states.put("draggingComponents", false);
+		}
 	}
 
 	public void mouseWheel(MouseEvent event, PApplet applet) {

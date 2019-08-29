@@ -22,4 +22,8 @@ public class Vector {
 		this.x = x;
 		this.y = y;
 	}
+	
+	public Vector copy() {
+		return new Vector(this.x, this.y);
+	}
 }

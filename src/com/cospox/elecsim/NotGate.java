@@ -10,6 +10,12 @@ public class NotGate extends Component {
 		this.connections[0] = new Connection(new Vector(pos.x + 14, pos.y - 10), new Vector(posInArray, 0));
 		this.connections[1] = new Connection(new Vector(pos.x + 14, pos.y + 34), new Vector(posInArray, 1));
 	}
+	
+	@Override
+	public void updateConnectionsPos() {
+		this.connections[0].pos = new Vector(pos.x + 14, pos.y - 10);
+		this.connections[1].pos = new Vector(pos.x + 14, pos.y + 34);
+	}
 
 	@Override
 	public void draw(PApplet applet) {
@@ -50,5 +56,13 @@ public class NotGate extends Component {
 			return true;
 		}
 		return false;
+	}
+	
+	@Override
+	public Component copy() {
+		Component c = new NotGate(this.pos.copy(), this.posInArray);
+		c.connections = this.connections;
+		c.selected = this.selected;
+		return c;
 	}
 }

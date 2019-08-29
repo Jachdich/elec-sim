@@ -28,8 +28,13 @@ public class Main extends PApplet{
 	public void draw() {
 		this.game.draw(this);
 		if (Global.debug) {
+			
 			this.fill(255, 0, 0);
 			this.text(this.frameRate, 2, 38);
+			Runtime rt = Runtime.getRuntime();
+			double usedMiB = HelperFunctions.round((rt.totalMemory() - rt.freeMemory()) / 1024.0 / 1024.0, 3);
+			double totalMiB = HelperFunctions.round(rt.totalMemory() / 1024.0 / 1024.0, 3);
+			this.text(Double.toString(usedMiB) + "/" + Double.toString(totalMiB), 2, 50);
 			this.fill(255);
 		}
 	}

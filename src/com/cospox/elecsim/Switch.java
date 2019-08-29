@@ -13,6 +13,11 @@ public class Switch extends Component {
 		this.connections[0] = new Connection(new Vector(this.pos.x, this.pos.y + this.radius),
 											 new Vector(posInArray, 0));
 	}
+	
+	@Override
+	public void updateConnectionsPos() {
+		this.connections[0].pos = new Vector(this.pos.x, this.pos.y + this.radius);
+	}
 
 	@Override
 	public void draw(PApplet applet) {
@@ -51,5 +56,13 @@ public class Switch extends Component {
 			return true;
 		}
 		return false;
+	}
+	
+	@Override
+	public Component copy() {
+		Component c = new Switch(this.pos.copy(), this.posInArray);
+		c.connections = this.connections;
+		c.selected = this.selected;
+		return c;
 	}
 }

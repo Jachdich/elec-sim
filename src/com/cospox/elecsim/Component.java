@@ -65,4 +65,11 @@ public class Component {
 			c.selected = false;
 		}
 	}
+	
+	public Component copy() {
+		return null;
+	}
+
+	public void updateConnectionsPos() {
+	}
 }

@@ -12,6 +12,11 @@ public class Joint extends Component {
 	}
 	
 	@Override
+	public void updateConnectionsPos() {
+		this.connections[0].pos = new Vector(this.pos.x, this.pos.y);
+	}
+	
+	@Override
 	public void draw(PApplet applet) {
 		if (this.connections[0].on) { applet.fill(200); }
 		else { applet.fill(100); }
@@ -40,5 +45,13 @@ public class Joint extends Component {
 	@Override
 	public void update() {
 		this.connections[0].off();
+	}
+	
+	@Override
+	public Component copy() {
+		Component c = new Joint(this.pos.copy(), this.posInArray);
+		c.connections = this.connections;
+		c.selected = this.selected;
+		return c;
 	}
 }

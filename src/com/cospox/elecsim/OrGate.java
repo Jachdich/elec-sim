@@ -15,6 +15,13 @@ public class OrGate extends Component {
 		this.connections[2] = new Connection(new Vector(this.pos.x + 15 - Connection.WIDTH / 2, this.pos.y + 30), 
 											 new Vector(posInArray, 2)); // output
 	}
+	
+	@Override
+	public void updateConnectionsPos() {
+		this.connections[0].pos = new Vector(this.pos.x + 5, this.pos.y - Connection.HEIGHT + 9); // input A
+		this.connections[1].pos = new Vector(this.pos.x + 25 - Connection.WIDTH, this.pos.y - Connection.HEIGHT + 9); // input B
+		this.connections[2].pos = new Vector(this.pos.x + 15 - Connection.WIDTH / 2, this.pos.y + 30);
+	}
 
 	@Override
 	public void draw(PApplet applet) {
@@ -56,5 +63,13 @@ public class OrGate extends Component {
 		float y = translate.y + this.pos.y * zoom;
 		return HelperFunctions.isInsideRect(pos.x, pos.y, x, y, 30
 				* zoom, 30 * zoom);
+	}
+	
+	@Override
+	public Component copy() {
+		Component c = new OrGate(this.pos.copy(), this.posInArray);
+		c.connections = this.connections;
+		c.selected = this.selected;
+		return c;
 	}
 }
