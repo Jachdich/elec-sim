@@ -14,6 +14,8 @@
 //make connections easier to click on? #2
 //Wire selection only works in wire mode false; #8
 //Does not load last loaded file on startup - nothing written to save.txt. Also check if file exists before loading. #6
+//Wires dont get selected by ctrl-a (NOT ON GITHUB)
+//When selecting component, first time does not show wire to mouse (NOT ON GITHUB)
 
 //Component suggestions:
 //High source
@@ -27,12 +29,7 @@
 
 package com.cospox.elecsim;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -76,10 +73,10 @@ public class Game {
 		this.states.put("draggingComponents", false);
 		
 		//load previously loaded filename && open that file on startup
-		String filename = this.fileToString("assets/gamedata/save.txt");
-		if (filename != "" && filename != "\n" && filename != " ") {
-			this.loadFromFile(filename);
-		}
+		//String filename = this.fileToString("assets/gamedata/save.txt");
+		//if (filename != "" && filename != "\n" && filename != " ") {
+		//	this.loadFromFile(filename);
+		//}
 	}
 
 	public void draw(PApplet applet) {
@@ -142,7 +139,7 @@ public class Game {
 	public boolean dispose() {
 		//run on quit by main class 
 		//write last filename loaded to file. Return whether the sketch should actually exit or not
-		this.writeToFile("assets/gamedata/save.txt", (this.loadedFileName == null ? "" : this.loadedFileName));
+		FileHandler.write("assets/gamedata/save.txt", (this.loadedFileName == null ? "" : this.loadedFileName));
 		System.out.println("assets/gamedata/save.txt is: " + (this.loadedFileName == null ? "" : this.loadedFileName));
 		if (!this.states.get("canExit")) {
 			System.out.println("Prompted to save");
@@ -230,10 +227,10 @@ public class Game {
 		//generate string version of every component to save to file
 		String file = "";
 		for (Component c: this.components) {
-			file += this.componentToString(c) + "\n";
+			file += ComponentEncoder.componentToString(c) + "\n";
 		}
 		for (Wire w: this.wires) {
-			file += this.wireToString(w) + "\n";
+			file += ComponentEncoder.wireToString(w) + "\n";
 		}
 		return file;
 	}
@@ -251,23 +248,7 @@ public class Game {
 	public void saveToFile(String fileName) {
 		//TODO GZIP - compress file
 		String file = this.generateText();
-		
-		FileWriter out = null;
-		try {
-			out = new FileWriter(fileName);
-			out.write(file);
-			out.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			if (out != null) {
-				try {
-					out.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
+		FileHandler.write(fileName, file);
 	}
 	
 	public void load(String file) {
@@ -277,116 +258,18 @@ public class Game {
 			if (line == "") { continue; }
 			switch (line.split("\\(")[0]) {
 			case "Wire":
-				this.unpackWireCall(line);
+				this.wires.add(ComponentEncoder.unpackWireCall(line, this.components));
 				break;
 			default:
-				this.addNewComponent(line.split("\\(")[0], this.unpackComponentCall(line));
+				this.components.add(ComponentEncoder.unpackComponentCall(line, this.components));
 			}
 		}
-	}
-	
-	public void writeToFile(String filename, String text) {
-		PrintWriter w = this.parent.createWriter(filename);
-		if (w == null) {
-			System.out.println("Error: file not found: " + filename);
-			return;
-		}
-		w.write(text);
-	}
-	
-	public String fileToString(String filename) {
-		BufferedReader reader = this.parent.createReader(filename);
-		String file = "";
-		String line = "";
-		try {
-			line = reader.readLine();
-		} 
-		catch (IOException e) {
-			this.error("Error: Game files are missing");
-			line = null;
-		} catch (NullPointerException e) {
-			this.error("Error: Game files are missing");
-			line = null;
-		}
-
-		while (line != null) {
-			try {
-				line = reader.readLine();
-				file += line;
-			} 
-			catch (IOException e) {
-				this.error("Error: Game files are missing");
-				line = null;
-			}
-		}
-		return file;
 	}
 	
 	public void loadFromFile(String filename) {
 		//TODO GZIP - compress file
-		FileReader in = null;
-		String out = null;
-		try {
-			in = new FileReader(filename);
-			int c;
-			out = "";
-			while ((c = in.read()) != -1) {
-				out += (char)c;
-			}
-			in.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			if (out != null) {
-				try {
-					in.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		if (out != null) {
-			this.load(out);
-		}
-	}
-	
-	public void unpackWireCall(String call) {
-		//convert 'Wire(args)' into needed info to construct a Wire object
-		String data = call.replace("Wire(", "").replace(");", "");
-		String s = data.split(",")[0].replace("[", "").replace("]", "");
-		String e = data.split(",")[1].replace("[", "").replace("]", "");
-		Vector spos = new Vector(Integer.parseInt(s.split(" ")[0]),
-								 Integer.parseInt(s.split(" ")[1]));
-		Vector epos = new Vector(Integer.parseInt(e.split(" ")[0]),
-				 				 Integer.parseInt(e.split(" ")[1]));
-		this.wires.add(new Wire(this.components.get((int)spos.x).connections[(int)spos.y],
-								this.components.get((int)epos.x).connections[(int)epos.y],
-								this.components.get((int)spos.x),
-								this.components.get((int)epos.x)));
-	}
-	
-	public Vector unpackComponentCall(String call) {
-		//convert 'Component(args)' into needed data to reconstruct a Component object
-		String vectorCall = call.split("\\(")[2].split("\\)")[0];
-		float x = Float.parseFloat(vectorCall.split(",")[0].replace(" ", ""));
-		float y = Float.parseFloat(vectorCall.split(",")[1].replace(" ", ""));
-		return new Vector(x, y);
-	}
-	
-	public String componentToString(Component c) {
-		String out = "";
-		out += c.TYPE + "(";
-		out += c.pos.toString();
-		out += ");";
-		return out;
-	}
-	
-	public String wireToString(Wire w) {
-		String out = "";
-		out += "Wire(";
-		out += "[" + w.getPosition(w.s) + "],";
-		out += "[" + w.getPosition(w.e) + "]);";
-		return out;
+		//TODO check if file is in the correct format
+		this.load(FileHandler.read(filename));
 	}
 	
 	private void selectAll() {
@@ -574,28 +457,7 @@ public class Game {
 	
 	private void addNewComponent(String name, Vector pos) {
 		int posInArray = this.components.size(); //end of array - pos that new component will be in
-		this.components.add(this.generateNewComponent(name, pos, posInArray));
-	}
-	
-	private Component generateNewComponent(String name, Vector pos, int posInArray) {
-		switch (name) {
-		//Add new components
-		case "Switch":
-			return new Switch(pos, posInArray);
-		case "AndGate":
-			return new AndGate(pos, posInArray);
-		case "OrGate":
-			return new OrGate(pos, posInArray);
-		case "XorGate":
-			return new XorGate(pos, posInArray);
-		case "NotGate":
-			return new NotGate(pos, posInArray);
-		case "Joint":
-			return new Joint(pos, posInArray);
-		default:
-			this.error("Unknown component '" + name + "'");
-			return null;
-		}
+		this.components.add(ComponentGenerator.generateNewComponent(name, pos, posInArray));
 	}
 	
 	public void mouseClicked(PApplet applet) {
