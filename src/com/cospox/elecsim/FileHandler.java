@@ -1,5 +1,6 @@
 package com.cospox.elecsim;
 
+import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -25,24 +26,23 @@ public class FileHandler {
 	}
 	
 	public static String read(String filename) {
-		FileReader in = null;
-		String out = null;
+		BufferedReader reader = null;
+		String out = "";
 		try {
-			in = new FileReader(filename);
-			int c;
-			out = "";
-			while ((c = in.read()) != -1) {
-				out += (char)c;
+			String line = null;
+			reader = new BufferedReader(new FileReader(filename));
+			while ((line = reader.readLine()) != null) {
+				out += line;
 			}
-			in.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			
 		} finally {
-			if (out != null) {
+			if (reader != null) {
 				try {
-					in.close();
+					reader.close();
 				} catch (IOException e) {
 					e.printStackTrace();
+					//TODO AAAHHHH HELP
 				}
 			}
 		}

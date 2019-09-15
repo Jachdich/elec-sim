@@ -30,6 +30,7 @@
 package com.cospox.elecsim;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -61,9 +62,23 @@ public class Game {
 	private KeyHandler keys = new KeyHandler();
 	public HashMap<String, Boolean> states = new HashMap<String, Boolean>();
 	
+	private String gameDataDir;
+	
 	public Game(PApplet applet) {
 		this.parent = applet;
 		this.hud = new hud(applet);
+		
+		try {
+			this.gameDataDir = new File(
+					Game.class.getProtectionDomain().getCodeSource()
+					.getLocation().toURI()).getParentFile().getAbsolutePath()
+					+ File.separator + "assets"
+					+ File.separator + "gamedata";
+		} catch (URISyntaxException e) {
+			this.states.put("pathError", true);
+			this.gameDataDir = null;
+		}
+		this.states.put("pathError", true);
 		
 		this.states.put("canExit", true);
 		this.states.put("saving", false);
@@ -71,9 +86,18 @@ public class Game {
 		this.states.put("exitAfterSave", false);
 		this.states.put("halt", false);
 		this.states.put("draggingComponents", false);
+		if (this.states.get("pathError") == null) {
+			this.states.put("pathError", false);
+		}
+			
 		
 		//load previously loaded filename && open that file on startup
-		//String filename = this.fileToString("assets/gamedata/save.txt");
+		boolean creatConfig = !FileHandler.fileExists(this.gameDataDir + File.separator + "save.txt");
+		if (createConfig) {
+			FileHandler.createeFileAndParentDirectories(); //IDK
+		}
+		//String filename = FileHandler.read(this.getClass().get)
+		//System.out.println(filename);
 		//if (filename != "" && filename != "\n" && filename != " ") {
 		//	this.loadFromFile(filename);
 		//}
@@ -81,6 +105,16 @@ public class Game {
 
 	public void draw(PApplet applet) {
 		if (this.states.get("halt")) { return; }
+		if (this.states.get("pathError")) {
+			//display path error message
+			applet.background(0);
+			applet.text("Error: A path error was thrown when trying to access the config files.", 10, 1 * 15);
+			applet.text("This probably means that either a folder disappeared unexpectedly, or", 10, 2 * 15);
+			applet.text("the folder path has special characters in it that aren't allowed.", 10, 3 * 15);
+			applet.text("Try starting the program again, and if the problem persists,", 10, 4 * 15);
+			applet.text("check the folders for special characters like ', ., & and £.", 10, 5 * 15);
+			return;
+		}
 		//update the logic 10 times per frame, reduces noticable lag
 		//TODO May cause performance issues, maybe add setting to change updates per frame?
 		for (int i = 0; i < 10; i++) { this.update(); }
@@ -139,7 +173,7 @@ public class Game {
 	public boolean dispose() {
 		//run on quit by main class 
 		//write last filename loaded to file. Return whether the sketch should actually exit or not
-		FileHandler.write("assets/gamedata/save.txt", (this.loadedFileName == null ? "" : this.loadedFileName));
+		//FileHandler.writeClassPath("/assets/gamedata/save.txt", (this.loadedFileName == null ? "" : this.loadedFileName), this);
 		System.out.println("assets/gamedata/save.txt is: " + (this.loadedFileName == null ? "" : this.loadedFileName));
 		if (!this.states.get("canExit")) {
 			System.out.println("Prompted to save");
