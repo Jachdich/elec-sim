@@ -1,6 +1,7 @@
 package com.cospox.elecsim;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -47,5 +48,10 @@ public class FileHandler {
 			}
 		}
 		return out;
+	}
+
+	public static boolean fileExists(String string) {
+		File f = new File(string);
+		return (f.exists() && !f.isDirectory());
 	}
 }

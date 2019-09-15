@@ -14,8 +14,8 @@
 //make connections easier to click on? #2
 //Wire selection only works in wire mode false; #8
 //Does not load last loaded file on startup - nothing written to save.txt. Also check if file exists before loading. #6
-//Wires dont get selected by ctrl-a (NOT ON GITHUB)
-//When selecting component, first time does not show wire to mouse (NOT ON GITHUB)
+//Wires dont get selected by ctrl-a #10
+//When selecting component, first time does not show wire to mouse #11
 
 //Component suggestions:
 //High source
@@ -92,9 +92,9 @@ public class Game {
 			
 		
 		//load previously loaded filename && open that file on startup
-		boolean creatConfig = !FileHandler.fileExists(this.gameDataDir + File.separator + "save.txt");
+		boolean createConfig = !FileHandler.fileExists(this.gameDataDir + File.separator + "save.txt");
 		if (createConfig) {
-			FileHandler.createeFileAndParentDirectories(); //IDK
+			//FileHandler.createFileAndParentDirectories(); //IDK
 		}
 		//String filename = FileHandler.read(this.getClass().get)
 		//System.out.println(filename);
