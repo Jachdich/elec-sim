@@ -1,1 +1,1 @@
-THIS is ASSETS/GAMEDATA/SAVE.TXT
+/media/sage/JamsFiles/Decoder

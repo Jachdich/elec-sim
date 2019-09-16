@@ -26,10 +26,12 @@
 //Feature suggestion:
 //Snap to grid mode 
 //Settings menu & logic iterations per frame setting #9
+//Add ignore button to path error message
 
 package com.cospox.elecsim;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -77,8 +79,8 @@ public class Game {
 		} catch (URISyntaxException e) {
 			this.states.put("pathError", true);
 			this.gameDataDir = null;
+			e.printStackTrace();
 		}
-		this.states.put("pathError", true);
 		
 		this.states.put("canExit", true);
 		this.states.put("saving", false);
@@ -94,13 +96,20 @@ public class Game {
 		//load previously loaded filename && open that file on startup
 		boolean createConfig = !FileHandler.fileExists(this.gameDataDir + File.separator + "save.txt");
 		if (createConfig) {
-			//FileHandler.createFileAndParentDirectories(); //IDK
+			File config = new File(this.gameDataDir + File.separator + "save.txt");
+			config.getParentFile().mkdirs();
+			try {
+				config.createNewFile();
+			} catch (IOException e) {
+				this.states.put("pathError", true);
+				e.printStackTrace();
+			}
 		}
-		//String filename = FileHandler.read(this.getClass().get)
-		//System.out.println(filename);
-		//if (filename != "" && filename != "\n" && filename != " ") {
-		//	this.loadFromFile(filename);
-		//}
+		String filename = FileHandler.read(this.gameDataDir + File.separator + "save.txt");
+		System.out.println("LOADING FROM: " + filename);
+		if (filename != "" && filename != "\n" && filename != " ") {
+			this.loadFromFile(filename);
+		}
 	}
 
 	public void draw(PApplet applet) {
@@ -112,7 +121,7 @@ public class Game {
 			applet.text("This probably means that either a folder disappeared unexpectedly, or", 10, 2 * 15);
 			applet.text("the folder path has special characters in it that aren't allowed.", 10, 3 * 15);
 			applet.text("Try starting the program again, and if the problem persists,", 10, 4 * 15);
-			applet.text("check the folders for special characters like ', ., & and £.", 10, 5 * 15);
+			applet.text("check the folders for special characters like ' . and £.", 10, 5 * 15);
 			return;
 		}
 		//update the logic 10 times per frame, reduces noticable lag
@@ -173,7 +182,7 @@ public class Game {
 	public boolean dispose() {
 		//run on quit by main class 
 		//write last filename loaded to file. Return whether the sketch should actually exit or not
-		//FileHandler.writeClassPath("/assets/gamedata/save.txt", (this.loadedFileName == null ? "" : this.loadedFileName), this);
+		FileHandler.write(this.gameDataDir + File.separator + "save.txt", (this.loadedFileName == null ? "" : this.loadedFileName));
 		System.out.println("assets/gamedata/save.txt is: " + (this.loadedFileName == null ? "" : this.loadedFileName));
 		if (!this.states.get("canExit")) {
 			System.out.println("Prompted to save");
