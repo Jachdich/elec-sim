@@ -14,8 +14,12 @@
 //make connections easier to click on? #2
 //Wire selection only works in wire mode false; #8
 //Does not load last loaded file on startup - nothing written to save.txt. Also check if file exists before loading. #6 --REMOVE FROM GITHUB MAYBE
-//Wires dont get selected by ctrl-a #10
+//Wires dont get selected by ctrl-a #10 --REMOVE
 //When selecting component, first time does not show wire to mouse #11
+//ctrl-z after deleting wires doesn't work #14
+//add new/close button #13
+//add redo function #12
+
 
 //Component suggestions:
 //High source
