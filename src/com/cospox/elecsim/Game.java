@@ -13,7 +13,7 @@
 
 //make connections easier to click on? #2
 //Wire selection only works in wire mode false; #8
-//Does not load last loaded file on startup - nothing written to save.txt. Also check if file exists before loading. #6
+//Does not load last loaded file on startup - nothing written to save.txt. Also check if file exists before loading. #6 --REMOVE FROM GITHUB MAYBE
 //Wires dont get selected by ctrl-a #10
 //When selecting component, first time does not show wire to mouse #11
 
@@ -109,6 +109,7 @@ public class Game {
 		System.out.println("LOADING FROM: " + filename);
 		if (filename != "" && filename != "\n" && filename != " ") {
 			this.loadFromFile(filename);
+			this.loadedFileName = filename;
 		}
 	}
 
@@ -297,7 +298,7 @@ public class Game {
 	public void load(String file) {
 		this.components.clear();
 		this.wires.clear();
-		for (String line: file.split("\n")) {
+		for (String line: file.replace("\n", "").split(";")) {
 			if (line == "") { continue; }
 			switch (line.split("\\(")[0]) {
 			case "Wire":

@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class ComponentEncoder {
 	public static Wire unpackWireCall(String call, ArrayList<Component> components) {
 		//convert 'Wire(args)' into needed info to construct a Wire object
-		String data = call.replace("Wire(", "").replace(");", "");
+		String data = call.replace("Wire(", "").replace(")", "");
 		String s = data.split(",")[0].replace("[", "").replace("]", "");
 		String e = data.split(",")[1].replace("[", "").replace("]", "");
 		Vector spos = new Vector(Integer.parseInt(s.split(" ")[0]),
