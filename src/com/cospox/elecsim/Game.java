@@ -322,6 +322,12 @@ public class Game {
 			this.selectedComponents.add(c);
 			c.select();
 		}
+		
+		this.selectedWires.clear();
+		for (Wire w: this.wires) {
+			this.selectedWires.add(w);
+			w.select();
+		}
 	}
 	
 	private void deSelectAll() {
@@ -329,6 +335,12 @@ public class Game {
 		for (Component c: this.components) {
 			this.selectedComponents.remove(c);
 			c.deSelect();
+		}
+		
+		this.selectedWires.clear();
+		for (Wire w: this.wires) {
+			this.selectedWires.remove(w);
+			w.deSelect();
 		}
 	}
 	
