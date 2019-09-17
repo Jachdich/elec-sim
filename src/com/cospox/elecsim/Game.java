@@ -7,19 +7,19 @@
 //refactor/clean up Game class and other classes - especially now that the wire copying works, it's very messy
 //comment all classes - IMPORTANT now that I won't be sole dev
 //done: None
-//FIX THE FREEKING FILE INCONSISTANCY
+
 
 //Taken from GitHub - close issue and delete line once 1000% fixed. Some are not on GitHub (IDK work it out yourself)
 
 //make connections easier to click on? #2
 //Wire selection only works in wire mode false; #8
-//Does not load last loaded file on startup - nothing written to save.txt. Also check if file exists before loading. #6 --REMOVE FROM GITHUB MAYBE
-//Wires dont get selected by ctrl-a #10 --REMOVE
-//When selecting component, first time does not show wire to mouse #11
-//ctrl-z after deleting wires doesn't work #14
+//When selecting component, first time does not show wire to mouse #11 NEEDS VERIFICATION
 //add new/close button #13
 //add redo function #12
-
+//undo does not properly work with moving components NOT ON GITHUB
+//Add 'changes were made do u want to save pwese' on file open
+//Reset undo buffer on open file
+//Some component movements don't correctly add undo points?
 
 //Component suggestions:
 //High source
@@ -31,6 +31,7 @@
 //Snap to grid mode 
 //Settings menu & logic iterations per frame setting #9
 //Add ignore button to path error message
+//Keyboard shortcut menu (ctrl-z and others that aren't intrinsically shown)
 
 package com.cospox.elecsim;
 
@@ -52,6 +53,7 @@ public class Game {
 	public ArrayList<Wire>      selectedWires      = new ArrayList<Wire>();
 	
 	private ArrayList<Object> copyBuffer = new ArrayList<Object>();
+	private int undoPosition = 0;
 	
 	public String[] selectedTool = {"select", "wire", "component"}; //TODO make it just a string IDK
 	public String selectedComponent = "AndGate";
@@ -250,14 +252,25 @@ public class Game {
 	
 	public void updateUndoHistory() {
 		this.history.add(new HistorySave(this.components, this.wires));
+		this.undoPosition += 1;
+		System.out.println(this.undoPosition);
+	}
+	
+	public void redo() {
+		if (this.undoPosition > this.history.size()) {
+			return;
+		}
+		this.undoPosition += 1;
+		System.out.println("Before undo " + this.undoPosition);
+		this.undo();
+		System.out.println("After undo " + this.undoPosition);
 	}
 	
 	public void undo() {
 		//get last history point and replace components and wires
-		int end = this.history.size() - 1;
-		if (end < 0) { return; }
-		HistorySave h = this.history.get(end);
-		this.history.remove(end);
+		if (this.undoPosition - 1 < 0) { return; }
+		this.undoPosition -= 1;
+		HistorySave h = this.history.get(this.undoPosition);
 		this.wires = h.wires;
 		this.components = h.components;
 		//as the components have been copied, selectedComponents is inacurate.
@@ -653,6 +666,7 @@ public class Game {
 		if (this.keys.ctrl() && !this.keys.shift() && this.keys.get(80)) { this.clear(); }					//ctrl+p = clear
 		if (this.keys.ctrl() && !this.keys.shift() && this.keys.get(79)) { this.open(); }					//ctrl+o = open
 		if (this.keys.ctrl() && !this.keys.shift() && this.keys.get(90)) { this.undo(); }					//ctrl+z = undo
+		if (this.keys.ctrl() && !this.keys.shift() && this.keys.get(89)) { this.redo(); }					//ctrl+y = redo
 		if (this.keys.ctrl() && !this.keys.shift() && this.keys.get(67)) { this.copy(); }					//ctrl+c = copy
 		if (this.keys.ctrl() && !this.keys.shift() && this.keys.get(86)) { this.paste(); }					//ctrl+v = paste
 		if (this.keys.ctrl() && !this.keys.shift() && this.keys.get(65)) { this.selectAll(); }				//ctrl+a = select all
