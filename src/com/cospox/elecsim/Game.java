@@ -12,13 +12,14 @@
 //Taken from GitHub - close issue and delete line once 1000% fixed. Some are not on GitHub (IDK work it out yourself)
 
 //make connections easier to click on? #2
+
 //Wire selection only works in wire mode false; #8
 //When selecting component, first time does not show wire to mouse #11 NEEDS VERIFICATION
 //add new/close button #13
 //add redo function #12
-//undo does not properly work with moving components NOT ON GITHUB
-//Add 'changes were made do u want to save pwese' on file open
-//Reset undo buffer on open file
+//undo does not properly work with moving components #17
+//Add 'changes were made do u want to save pwese' on file open #16
+//Reset undo buffer on open file #15
 //Some component movements don't correctly add undo points?
 
 //Component suggestions:
@@ -315,6 +316,8 @@ public class Game {
 	public void load(String file) {
 		this.components.clear();
 		this.wires.clear();
+		this.undoPosition = 0;
+		this.history.clear();
 		for (String line: file.replace("\n", "").split(";")) {
 			if (line == "") { continue; }
 			switch (line.split("\\(")[0]) {
