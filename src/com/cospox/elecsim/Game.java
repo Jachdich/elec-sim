@@ -16,7 +16,6 @@
 //Wire selection only works in wire mode false; #8
 //When selecting component, first time does not show wire to mouse #11 NEEDS VERIFICATION
 //add new/close button #13
-//add redo function #12
 //undo does not properly work with moving components #17
 //Add 'changes were made do u want to save pwese' on file open #16
 //Some component movements don't correctly add undo points?
