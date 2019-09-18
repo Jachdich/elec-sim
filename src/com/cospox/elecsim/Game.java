@@ -19,7 +19,6 @@
 //add redo function #12
 //undo does not properly work with moving components #17
 //Add 'changes were made do u want to save pwese' on file open #16
-//Reset undo buffer on open file #15
 //Some component movements don't correctly add undo points?
 
 //Component suggestions:
@@ -54,14 +53,14 @@ public class Game {
 	public ArrayList<Wire>      selectedWires      = new ArrayList<Wire>();
 	
 	private ArrayList<Object> copyBuffer = new ArrayList<Object>();
-	private int undoPosition = 0;
 	
 	public String[] selectedTool = {"select", "wire", "component"}; //TODO make it just a string IDK
 	public String selectedComponent = "AndGate";
 	public Connection selectedConnection = null;
 	private Component selectedConComponent = null;
 	public String loadedFileName = null;
-	public ArrayList<HistorySave> history = new ArrayList<HistorySave>();
+	public ArrayList<HistorySave> undoHistory = new ArrayList<HistorySave>();
+	public ArrayList<HistorySave> redoHistory = new ArrayList<HistorySave>();
 	
 	public Vector translate = new Vector();
 	public float zoom = 1;
@@ -252,26 +251,40 @@ public class Game {
 	}
 	
 	public void updateUndoHistory() {
-		this.history.add(new HistorySave(this.components, this.wires));
-		this.undoPosition += 1;
-		System.out.println(this.undoPosition);
+		this.undoHistory.add(new HistorySave(this.components, this.wires));
 	}
 	
-	public void redo() {
-		if (this.undoPosition > this.history.size()) {
-			return;
-		}
-		this.undoPosition += 1;
-		System.out.println("Before undo " + this.undoPosition);
-		this.undo();
-		System.out.println("After undo " + this.undoPosition);
+	public void updateRedoHistory() {
+		this.redoHistory.add(new HistorySave(this.components, this.wires));
 	}
 	
 	public void undo() {
 		//get last history point and replace components and wires
-		if (this.undoPosition - 1 < 0) { return; }
-		this.undoPosition -= 1;
-		HistorySave h = this.history.get(this.undoPosition);
+		int size = this.undoHistory.size();
+		if (size - 1 < 0) { return; }
+		this.updateRedoHistory();
+		HistorySave h = this.undoHistory.get(size - 1);
+		this.undoHistory.remove(size - 1);
+		this.wires = h.wires;
+		this.components = h.components;
+		//as the components have been copied, selectedComponents is inacurate.
+		this.selectedComponents.clear();
+		
+		for (Component c: this.components) {
+			c.updateConnectionsPos();
+			if (c.selected) {
+				this.selectedComponents.add(c);
+			}
+		}
+	}
+	
+	public void redo() {
+		//get last history point and replace components and wires
+		int size = this.redoHistory.size();
+		if (size - 1 < 0) { return; }
+		this.updateUndoHistory();
+		HistorySave h = this.redoHistory.get(size - 1);
+		this.redoHistory.remove(size - 1);
 		this.wires = h.wires;
 		this.components = h.components;
 		//as the components have been copied, selectedComponents is inacurate.
@@ -316,8 +329,8 @@ public class Game {
 	public void load(String file) {
 		this.components.clear();
 		this.wires.clear();
-		this.undoPosition = 0;
-		this.history.clear();
+		this.undoHistory.clear();
+		this.redoHistory.clear();
 		for (String line: file.replace("\n", "").split(";")) {
 			if (line == "") { continue; }
 			switch (line.split("\\(")[0]) {
