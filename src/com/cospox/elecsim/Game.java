@@ -252,6 +252,7 @@ public class Game {
 	
 	public void updateUndoHistory() {
 		this.undoHistory.add(new HistorySave(this.components, this.wires));
+		this.redoHistory.clear();
 	}
 	
 	public void updateRedoHistory() {
@@ -279,10 +280,11 @@ public class Game {
 	}
 	
 	public void redo() {
+		//Yes, this is a copy/paste of void undo().
 		//get last history point and replace components and wires
 		int size = this.redoHistory.size();
 		if (size - 1 < 0) { return; }
-		this.updateUndoHistory();
+		this.undoHistory.add(new HistorySave(this.components, this.wires));
 		HistorySave h = this.redoHistory.get(size - 1);
 		this.redoHistory.remove(size - 1);
 		this.wires = h.wires;
