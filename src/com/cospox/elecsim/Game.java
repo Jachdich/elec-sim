@@ -20,6 +20,7 @@
 //Minor visual bug where sometimes the wrong connections outlined in red
 //Add 'changes were made do u want to save pwese' on file open #16
 //Fix the damn and gate red outline!
+//failsafe for opening multiple save dialogs or similar
 
 //Component suggestions:
 //Clock - adjustable freq?????? HOW
@@ -30,6 +31,7 @@
 //Settings menu & logic iterations per frame setting #9
 //Add ignore button to path error message
 //Keyboard shortcut menu (ctrl-z and others that aren't intrinsically shown)
+//LABELS/COMMENTS! COOL
 
 package com.cospox.elecsim;
 import java.io.File;
@@ -40,6 +42,7 @@ import java.util.HashMap;
 
 import processing.core.PApplet;
 import processing.core.PConstants;
+import processing.core.PFont;
 import processing.event.MouseEvent;
 
 public class Game {
@@ -69,9 +72,19 @@ public class Game {
 	
 	private String gameDataDir;
 	
+	public static PFont FONT, SMALLFONT;
+	public static String FONT_FAMILY = "courier";
+	public static int FONT_SIZE = 40;
+	
 	public Game(PApplet applet) {
 		this.parent = applet;
 		this.hud = new hud(applet);
+		
+		Game.FONT = applet.createFont(Game.FONT_FAMILY, Game.FONT_SIZE);
+		Game.SMALLFONT = applet.createFont(Game.FONT_FAMILY, Game.FONT_SIZE * 0.6F);
+		
+		applet.textAlign(PConstants.LEFT, PConstants.TOP);
+		applet.textFont(Game.FONT);
 		
 		try {
 			this.gameDataDir = new File(
@@ -114,7 +127,6 @@ public class Game {
 			//this.loadFromFile(filename);
 			//this.loadedFileName = filename;
 		}
-		this.components.add(new HighSource(new Vector(0, 0), 0));
 	}
 
 	public void draw(PApplet applet) {

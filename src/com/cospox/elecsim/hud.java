@@ -3,6 +3,7 @@ package com.cospox.elecsim;
 import java.util.HashMap;
 
 import processing.core.PApplet;
+import processing.core.PConstants;
 import processing.core.PImage;
 
 public class hud {
@@ -64,8 +65,7 @@ public class hud {
 			applet.stroke(0);
 			applet.line(applet.width - 20, 30, applet.width - 10, 20);
 		} else if (game.selectedTool[0] == "component") {
-			PImage i = this.images.get(game.selectedComponent + "S").copy();
-			i.resize(20, 20);
+			PImage i = this.images.get(game.selectedComponent + "S");
 			applet.image(i, applet.width - 20, 20);
 		} else if (game.selectedTool[0] == "select") {
 			applet.image(this.images.get("selectImage"), applet.width - 20, 20);
@@ -117,41 +117,73 @@ public class hud {
 	}
 	
 	private void drawButtons(PApplet applet, Game game) {
+		float T_HEIGHT = applet.textAscent() + applet.textDescent();
+		int T_WIDTH = 0;
+		int PADDING = (int) (T_HEIGHT / 10);
+		
 		applet.stroke(0);
+		
+		float width_save = applet.textWidth("Save");
+		float width_open = applet.textWidth("Open");
+		float width_saveas = applet.textWidth("SaveAs");
+		float width_clear = applet.textWidth("Clear");
+		float width_new = applet.textWidth("New");
+		
 		if (this.buttonsPressed[0]) applet.fill(100); else applet.noFill();
-		applet.rect(0, 0, 36, 13);
+		applet.rect(T_WIDTH, 0, width_save + PADDING * 2, T_HEIGHT);
+		
 		if (this.buttonsPressed[1]) applet.fill(100); else applet.noFill();
-		applet.rect(36, 0, 40, 13);
+		applet.rect(T_WIDTH += (width_save + PADDING * 2), 0, width_open + PADDING * 2, T_HEIGHT);
+		
 		if (this.buttonsPressed[2]) applet.fill(100); else applet.noFill();
-		applet.rect(76, 0, 50, 13);
+		applet.rect(T_WIDTH += (width_open + PADDING * 2), 0, width_saveas + PADDING * 2, T_HEIGHT);
+		
 		if (this.buttonsPressed[3]) applet.fill(100); else applet.noFill();
-		applet.rect(126, 0, 40, 13);
+		applet.rect(T_WIDTH += (width_saveas + PADDING * 2), 0, width_clear + PADDING * 2, T_HEIGHT);
+		
 		if (this.buttonsPressed[4]) applet.fill(100); else applet.noFill();
-		applet.rect(166, 0, 38, 13);
+		applet.rect(T_WIDTH += (width_clear + PADDING * 2), 0, width_new + PADDING * 2, T_HEIGHT);
+		
+		T_WIDTH = 0;
 		applet.fill(0);
-		applet.text("Open", 40, 10);
-		applet.text("Save", 2, 10);
-		applet.text("SaveAs", 78, 10);
-		applet.text("Clear", 129, 10);
-		applet.text("New", 170, 10);
-		applet.text("Ctrl-o", 40, 25);
-		applet.text("Ctrl-s", 2, 25);
-		applet.text("Ctrl-S", 84 , 25);
-		applet.text("Ctrl-p", 128, 25);
-		applet.text("Ctrl-n", 168, 25);
+		applet.text("Save", T_WIDTH += PADDING, 0);
+		applet.text("Open", T_WIDTH += (width_save) + PADDING * 2, 0);
+		applet.text("SaveAs", T_WIDTH += (width_open) + PADDING * 2, 0);
+		applet.text("Clear", T_WIDTH += (width_saveas) + PADDING * 2, 0);
+		applet.text("New", T_WIDTH += (width_clear) + PADDING * 2, 0);
+		
+		T_WIDTH = 0;
+		applet.textFont(Game.SMALLFONT);
+		applet.text("Ctrl-o", T_WIDTH += PADDING, T_HEIGHT);
+		applet.text("Ctrl-s", T_WIDTH += (width_save) + PADDING * 2, T_HEIGHT);
+		applet.text("Ctrl-S", T_WIDTH += (width_open) + PADDING * 2, T_HEIGHT);
+		applet.text("Ctrl-p", T_WIDTH += (width_saveas) + PADDING * 2, T_HEIGHT);
+		applet.text("Ctrl-n", T_WIDTH += (width_clear) + PADDING * 2, T_HEIGHT);
+		applet.textFont(Game.FONT);
 	}
 	
 	private void checkTopButtons(PApplet applet, Game game) {
+		float T_HEIGHT = applet.textAscent() + applet.textDescent();
+		int T_WIDTH = 0;
+		int PADDING = (int) (T_HEIGHT / 10);
+		
+		float width_save = applet.textWidth("Save");
+		float width_open = applet.textWidth("Open");
+		float width_saveas = applet.textWidth("SaveAs");
+		float width_clear = applet.textWidth("Clear");
+		float width_new = applet.textWidth("New");
+		
 		int x = applet.mouseX;
 		int y = applet.mouseY;
 		for (int i = 0; i < 10; i++) {
 			this.buttonsPressed[i] = false;
 		}
-		if (x > 00 && x < 36 && y <= 13) { game.save(); this.buttonsPressed[0] = true; }
-		if (x > 36 && x < 76 && y <= 13) { game.open(); this.buttonsPressed[1] = true; }
-		if (x > 76 && x < 126 && y <= 13) { game.saveAs(); this.buttonsPressed[2] = true; }
-		if (x > 126 && x < 166 && y <= 13) { game.clear(); this.buttonsPressed[3] = true; }
-		if (x > 166 && x < 204 && y <= 13) { game.newFile(); this.buttonsPressed[4] = true; }
+		
+		if (x > (T_WIDTH)                           && x < T_WIDTH + width_save + PADDING * 2 && y <= T_HEIGHT) { game.save(); this.buttonsPressed[0] = true; }
+		if (x > (T_WIDTH += (width_save + PADDING * 2)) && x < T_WIDTH + width_open + PADDING * 2 && y <= T_HEIGHT) { game.open(); this.buttonsPressed[1] = true; }
+		if (x > (T_WIDTH += (width_open + PADDING * 2))   && x < T_WIDTH + width_saveas + PADDING * 2 && y <= T_HEIGHT) { game.saveAs(); this.buttonsPressed[2] = true; }
+		if (x > (T_WIDTH += (width_saveas + PADDING * 2)) && x < T_WIDTH + width_clear + PADDING * 2 && y <= T_HEIGHT) { game.clear(); this.buttonsPressed[3] = true; }
+		if (x > (T_WIDTH += (width_clear + PADDING * 2)) && x < T_WIDTH + width_new + PADDING * 2 && y <= T_HEIGHT) { game.newFile(); this.buttonsPressed[4] = true; }
 	}
 	
 	public void mousePressed(PApplet applet, Game game) {
