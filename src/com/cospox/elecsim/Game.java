@@ -15,14 +15,13 @@
 
 //Wire selection only works in wire mode false; #8
 //When selecting component, first time does not show wire to mouse #11 NEEDS VERIFICATION
-//add new/close button #13
-//undo does not properly work with moving components #17
+//add new/close button #13 FIXED
+//undo does not properly work with moving components #17 FIXED
+//Minor visual bug where sometimes the wrong connections outlined in red
 //Add 'changes were made do u want to save pwese' on file open #16
-//Some component movements don't correctly add undo points?
+//Fix the damn and gate red outline!
 
 //Component suggestions:
-//High source
-//Low source (needed for explicitness)
 //Clock - adjustable freq?????? HOW
 //Logic blocks/ICs/logic mode and (existing)IC mode/User-created ICs/packages/things like rsnor IDK
 
@@ -33,7 +32,6 @@
 //Keyboard shortcut menu (ctrl-z and others that aren't intrinsically shown)
 
 package com.cospox.elecsim;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -113,9 +111,10 @@ public class Game {
 		String filename = FileHandler.read(this.gameDataDir + File.separator + "save.txt");
 		System.out.println("LOADING FROM: " + filename);
 		if (filename != "" && filename != "\n" && filename != " ") {
-			this.loadFromFile(filename);
-			this.loadedFileName = filename;
+			//this.loadFromFile(filename);
+			//this.loadedFileName = filename;
 		}
+		this.components.add(new HighSource(new Vector(0, 0), 0));
 	}
 
 	public void draw(PApplet applet) {
@@ -221,6 +220,7 @@ public class Game {
 	}
 	
 	public void open() {
+		//TODO prompt to save
 		this.parent.selectInput("Select file...", "openFileCallback", null, this);
 	}
 	
@@ -242,6 +242,12 @@ public class Game {
 		this.loadFromFile(fileName);
 		this.loadedFileName = fileName;
 		this.states.put("halt", false);
+	}
+	
+	public void newFile() {
+		//TODO prompt to save
+		this.clear();
+		this.loadedFileName = null;
 	}
 	
 	public void clear() {
@@ -687,6 +693,7 @@ public class Game {
 		if (this.keys.ctrl() && !this.keys.shift() && this.keys.get(67)) { this.copy(); }					//ctrl+c = copy
 		if (this.keys.ctrl() && !this.keys.shift() && this.keys.get(86)) { this.paste(); }					//ctrl+v = paste
 		if (this.keys.ctrl() && !this.keys.shift() && this.keys.get(65)) { this.selectAll(); }				//ctrl+a = select all
+		if (this.keys.ctrl() && !this.keys.shift() && this.keys.get(78)) { this.newFile(); }				//ctrl+n = new
 		if (this.keys.get('y') && !this.keys.shift() && !this.keys.ctrl()) {								//y = switch wire mode
 			this.states.put("wireMode", !this.states.get("wireMode"));
 			for (Wire w: this.wires) {

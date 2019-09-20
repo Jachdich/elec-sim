@@ -7,7 +7,7 @@ import processing.core.PImage;
 
 public class hud {
 	private HashMap<String, PImage> images = new HashMap<String, PImage>();
-	private final int NUM_COMPONENTS = 6;
+	private final int NUM_COMPONENTS = 8;
 	private Vector mouseStart = new Vector();
 	public boolean canSelect = false;
 	private boolean[] buttonsPressed = new boolean[10];
@@ -20,6 +20,8 @@ public class hud {
 		this.images.put("XorGate",     applet.loadImage("assets/images/xor_gate.png"));
 		this.images.put("NotGate",     applet.loadImage("assets/images/not_gate.png"));
 		this.images.put("Joint",       applet.loadImage("assets/images/joint.png"));
+		this.images.put("HighSource",  applet.loadImage("assets/images/high.png"));
+		this.images.put("LowSource",   applet.loadImage("assets/images/low.png"));
 
 		//Add new components
 		this.addSmallImage("OrGate");
@@ -28,6 +30,8 @@ public class hud {
 		this.addSmallImage("XorGate");
 		this.addSmallImage("NotGate");
 		this.addSmallImage("Joint");
+		this.addSmallImage("HighSource");
+		this.addSmallImage("LowSource");
 	}
 
 	private void addSmallImage(String imageName) {
@@ -76,12 +80,14 @@ public class hud {
 		} else { applet.line(applet.width - 20, 65, applet.width - 5, 75); }
 
 		//Add new components
-		applet.image(this.images.get("Switch"),  4 + 32 * 0, applet.height - 32);
-		applet.image(this.images.get("AndGate"), 4 + 32 * 1, applet.height - 32);
-		applet.image(this.images.get("OrGate"),  4 + 32 * 2, applet.height - 32);
-		applet.image(this.images.get("XorGate"), 4 + 32 * 3, applet.height - 32);
-		applet.image(this.images.get("NotGate"), 4 + 32 * 4, applet.height - 32);
-		applet.image(this.images.get("Joint"),   4 + 32 * 5, applet.height - 32);
+		applet.image(this.images.get("Switch"),    4 + 32 * 0, applet.height - 32);
+		applet.image(this.images.get("AndGate"),   4 + 32 * 1, applet.height - 32);
+		applet.image(this.images.get("OrGate"),    4 + 32 * 2, applet.height - 32);
+		applet.image(this.images.get("XorGate"),   4 + 32 * 3, applet.height - 32);
+		applet.image(this.images.get("NotGate"),   4 + 32 * 4, applet.height - 32);
+		applet.image(this.images.get("Joint"),     4 + 32 * 5, applet.height - 32);
+		applet.image(this.images.get("HighSource"),4 + 32 * 6, applet.height - 32);
+		applet.image(this.images.get("LowSource"), 4 + 32 * 7, applet.height - 32);
 		
 		if (Global.debug) {
 			this.drawDebug(applet);
@@ -119,16 +125,20 @@ public class hud {
 		if (this.buttonsPressed[2]) applet.fill(100); else applet.noFill();
 		applet.rect(76, 0, 50, 13);
 		if (this.buttonsPressed[3]) applet.fill(100); else applet.noFill();
-		applet.rect(126, 0, 38, 13);
+		applet.rect(126, 0, 40, 13);
+		if (this.buttonsPressed[4]) applet.fill(100); else applet.noFill();
+		applet.rect(166, 0, 38, 13);
 		applet.fill(0);
 		applet.text("Open", 40, 10);
 		applet.text("Save", 2, 10);
 		applet.text("SaveAs", 78, 10);
-		applet.text("Clear", 128, 10);
+		applet.text("Clear", 129, 10);
+		applet.text("New", 170, 10);
 		applet.text("Ctrl-o", 40, 25);
 		applet.text("Ctrl-s", 2, 25);
 		applet.text("Ctrl-S", 84 , 25);
 		applet.text("Ctrl-p", 128, 25);
+		applet.text("Ctrl-n", 168, 25);
 	}
 	
 	private void checkTopButtons(PApplet applet, Game game) {
@@ -140,7 +150,8 @@ public class hud {
 		if (x > 00 && x < 36 && y <= 13) { game.save(); this.buttonsPressed[0] = true; }
 		if (x > 36 && x < 76 && y <= 13) { game.open(); this.buttonsPressed[1] = true; }
 		if (x > 76 && x < 126 && y <= 13) { game.saveAs(); this.buttonsPressed[2] = true; }
-		if (x > 126 && x < 164 && y <= 13) { game.clear(); this.buttonsPressed[3] = true; }
+		if (x > 126 && x < 166 && y <= 13) { game.clear(); this.buttonsPressed[3] = true; }
+		if (x > 166 && x < 204 && y <= 13) { game.newFile(); this.buttonsPressed[4] = true; }
 	}
 	
 	public void mousePressed(PApplet applet, Game game) {
@@ -186,10 +197,16 @@ public class hud {
 		if (HelperFunctions.isInsideRect(applet.mouseX, applet.mouseY, 4 + 32 * 5, applet.height - 32, 32, 32)) {
 			game.selectedComponent = "Joint";
 		}
+		if (HelperFunctions.isInsideRect(applet.mouseX, applet.mouseY, 4 + 32 * 6, applet.height - 32, 32, 32)) {
+			game.selectedComponent = "HighSource";
+		}
+		if (HelperFunctions.isInsideRect(applet.mouseX, applet.mouseY, 4 + 32 * 7, applet.height - 32, 32, 32)) {
+			game.selectedComponent = "LowSource";
+		}
 	}
 
 	public boolean isInsideHUDArea(Vector pos, Vector winSize) {
-		if (pos.x >= 0 && pos.x < 164 && pos.y >= 0 && pos.y < 14) { return true; } //top-left menu
+		if (pos.x >= 0 && pos.x < 204 && pos.y >= 0 && pos.y < 14) { return true; } //top-left menu
 		if (pos.x >= winSize.x - 30 && pos.y <= 80) { return true; } //top right menu
 		if (pos.x < 4 + 32 * NUM_COMPONENTS && pos.x >= 0 && pos.y >= winSize.y - 32 && pos.y <= winSize.y) { return true; } //bottom left menu
 		return false;

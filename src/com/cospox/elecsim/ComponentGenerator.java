@@ -16,6 +16,10 @@ public class ComponentGenerator {
 			return new NotGate(pos, posInArray);
 		case "Joint":
 			return new Joint(pos, posInArray);
+		case "HighSource":
+			return new HighSource(pos, posInArray);
+		case "LowSource":
+			return new LowSource(pos, posInArray);
 		default:
 			Errors.error("Unknown component '" + name + "'");
 			return null;

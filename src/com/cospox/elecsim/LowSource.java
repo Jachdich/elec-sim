@@ -2,25 +2,32 @@ package com.cospox.elecsim;
 
 import processing.core.PApplet;
 
-public class ComponentTemplate extends Component {
-	public ComponentTemplate(Vector pos, int posInArray) {
+public class LowSource extends Component {
+	public LowSource(Vector pos, int posInArray) {
 		super(pos, posInArray);
-		this.TYPE = "ComponentTemplate";
+		this.TYPE = "LowSource";
 		this.connections = new Connection[1];
-		this.connections[0] = new Connection(new Vector(this.pos.x, this.pos.y - Connection.HEIGHT),
-											 new Vector(posInArray, 0)); //input A
+		this.connections[0] = new Connection(new Vector(this.pos.x + 15 - Connection.WIDTH / 2.0F,
+											            this.pos.y + 20),
+											 new Vector(posInArray, 0)); //output
 	}
 	
 	@Override
 	public void updateConnectionsPos() {
-		this.connections[0].pos = new Vector(this.pos.x, this.pos.y - Connection.HEIGHT);
+		this.connections[0].pos = new Vector(this.pos.x + 15 - Connection.WIDTH / 2.0F,
+	            							 this.pos.y + 20);
 	}
 
 	@Override
 	public void draw(PApplet applet) {
 		if (this.selected) { applet.stroke(255, 20, 20); }
 		else { applet.noStroke(); }
-		//draw code
+		applet.fill(100);
+		applet.rect(this.pos.x, this.pos.y, 30, 20);
+		//applet.textSize(10);
+		applet.fill(20);
+		applet.text("0", this.pos.x + 12, this.pos.y + 13);
+		//applet.textSize(11.9F);
 		for (Connection c: this.connections) {
 			c.draw(applet);
 		}
@@ -28,27 +35,20 @@ public class ComponentTemplate extends Component {
 
 	@Override
 	public void update() {
-		boolean output = this.connections[0].on; //replace with logic
-		for (Connection c: this.connections) {
-			c.off();
-		}
-		if (output) {
-			//set outputs
-		}
+		this.connections[0].off();
 	}
 
 	@Override
 	public boolean isMouseIntersecting(Vector pos, float zoom, Vector translate) {
 		float x = translate.x + this.pos.x * zoom;
 		float y = translate.y + this.pos.y * zoom;
-		//IDK i mean keep it if u like
-		return HelperFunctions.isInsideRect(pos.x, pos.y, x, y, 30 * zoom, 30 * zoom);
+		return HelperFunctions.isInsideRect(pos.x, pos.y, x, y, 30 * zoom, 20 * zoom);
 	}
 	
 	@Override
 	public Component copy() {
 		//change class from ComponentTemplate
-		Component c = new ComponentTemplate(this.pos.copy(), this.posInArray);
+		Component c = new LowSource(this.pos.copy(), this.posInArray);
 		c.connections = this.connections; //TODO cannot copy connections (because wires) but they don't move with component
 		c.selected = this.selected;
 		return c;
