@@ -14,12 +14,12 @@ public class Main extends PApplet{
 	public void settings() {
 		//int offset = 50;
 		//int h = 720 - offset;
-		this.size(480, 640, P3D);
+		this.size(480, 640, P2D);
 	}
 
 	@Override
 	public void setup() {
-		this.frameRate(1000);
+		this.frameRate(60);
 		surface.setResizable(true);
 		this.game = new Game(this);
 	}

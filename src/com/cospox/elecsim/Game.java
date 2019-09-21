@@ -21,6 +21,9 @@
 //Add 'changes were made do u want to save pwese' on file open #16
 //Fix the damn and gate red outline!
 //failsafe for opening multiple save dialogs or similar
+//HELP ME PLEASE - sometimes wires don't get copied
+//Sometimes the selection square does not appear
+//Wires STILL don't get selected properly with ctrl-a
 
 //Component suggestions:
 //Clock - adjustable freq?????? HOW
@@ -72,16 +75,15 @@ public class Game {
 	
 	private String gameDataDir;
 	
-	public static PFont FONT, SMALLFONT;
-	public static String FONT_FAMILY = "courier";
-	public static int FONT_SIZE = 40;
+	public static PFont FONT;
+	public static String FONT_FAMILY = "SansSerif";
+	public static int FONT_SIZE = 12;
 	
 	public Game(PApplet applet) {
 		this.parent = applet;
 		this.hud = new hud(applet);
 		
 		Game.FONT = applet.createFont(Game.FONT_FAMILY, Game.FONT_SIZE);
-		Game.SMALLFONT = applet.createFont(Game.FONT_FAMILY, Game.FONT_SIZE * 0.6F);
 		
 		applet.textAlign(PConstants.LEFT, PConstants.TOP);
 		applet.textFont(Game.FONT);

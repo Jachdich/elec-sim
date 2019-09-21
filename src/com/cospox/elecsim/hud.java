@@ -3,7 +3,7 @@ package com.cospox.elecsim;
 import java.util.HashMap;
 
 import processing.core.PApplet;
-import processing.core.PConstants;
+import processing.core.PFont;
 import processing.core.PImage;
 
 public class hud {
@@ -12,6 +12,9 @@ public class hud {
 	private Vector mouseStart = new Vector();
 	public boolean canSelect = false;
 	private boolean[] buttonsPressed = new boolean[10];
+	
+	private final static int PADDING_FACTOR = 4;
+	
 	public hud(PApplet applet) {
 		//Add new components
 		this.images.put("selectImage", applet.loadImage("assets/images/mouse.png"));
@@ -117,9 +120,10 @@ public class hud {
 	}
 	
 	private void drawButtons(PApplet applet, Game game) {
+		//applet.textFont(applet.createFont("v", 12));
 		float T_HEIGHT = applet.textAscent() + applet.textDescent();
 		int T_WIDTH = 0;
-		int PADDING = (int) (T_HEIGHT / 10);
+		int PADDING = (int) (T_HEIGHT / hud.PADDING_FACTOR);
 		
 		applet.stroke(0);
 		
@@ -153,19 +157,17 @@ public class hud {
 		applet.text("New", T_WIDTH += (width_clear) + PADDING * 2, 0);
 		
 		T_WIDTH = 0;
-		applet.textFont(Game.SMALLFONT);
 		applet.text("Ctrl-o", T_WIDTH += PADDING, T_HEIGHT);
 		applet.text("Ctrl-s", T_WIDTH += (width_save) + PADDING * 2, T_HEIGHT);
 		applet.text("Ctrl-S", T_WIDTH += (width_open) + PADDING * 2, T_HEIGHT);
 		applet.text("Ctrl-p", T_WIDTH += (width_saveas) + PADDING * 2, T_HEIGHT);
 		applet.text("Ctrl-n", T_WIDTH += (width_clear) + PADDING * 2, T_HEIGHT);
-		applet.textFont(Game.FONT);
 	}
 	
 	private void checkTopButtons(PApplet applet, Game game) {
 		float T_HEIGHT = applet.textAscent() + applet.textDescent();
 		int T_WIDTH = 0;
-		int PADDING = (int) (T_HEIGHT / 10);
+		int PADDING = (int) (T_HEIGHT / hud.PADDING_FACTOR);
 		
 		float width_save = applet.textWidth("Save");
 		float width_open = applet.textWidth("Open");
