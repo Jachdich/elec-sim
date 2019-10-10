@@ -22,11 +22,14 @@ public class HighSource extends Component {
 	public void draw(PApplet applet) {
 		if (this.selected) { applet.stroke(255, 20, 20); }
 		else { applet.noStroke(); }
+		
+		float T_HEIGHT = applet.textAscent() + applet.textDescent();
+		
 		applet.fill(100);
 		applet.rect(this.pos.x, this.pos.y, 30, 20);
 		//applet.textSize(10);
 		applet.fill(20);
-		applet.text("1", this.pos.x + 12, this.pos.y + 13);
+		applet.text("1", this.pos.x + 12, this.pos.y + T_HEIGHT - 12);
 		//applet.textSize(11.9F);
 		for (Connection c: this.connections) {
 			c.draw(applet);

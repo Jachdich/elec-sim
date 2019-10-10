@@ -15,7 +15,7 @@ public class Wire {
 		this.refe = refe; //component it originated from
 	}
 
-	public void draw(PApplet applet) {
+	public void draw(PApplet applet, Vector translate, float zoom) {
 		if (this.on) {
 			applet.stroke(128);
 		} else {
@@ -55,13 +55,20 @@ public class Wire {
 								 translate.y + this.s.pos.y * zoom);
 		Vector pose = new Vector(translate.x + this.e.pos.x * zoom,
 								 translate.y + this.e.pos.y * zoom);
+		
 		//check which point is *really* the start/end
 		Vector a = poss.x >= pose.x ? poss : pose;
 		Vector b = new Vector(applet.mouseX, applet.mouseY);
 		Vector c = poss.x > pose.x ? pose : poss;
 		
 		if (this.wireMode) {
-			return false; //TODO wire mode true selection algorithm
+			Vector x = new Vector(a.x, a.y);
+			Vector y = new Vector(c.x, a.y);
+			Vector z = new Vector(c.x, a.y);
+			Vector w = new Vector(c.x, c.y);
+			
+			return HelperFunctions.isPointOnLine(x, b, y, (float)0.8 * zoom) ||
+				   HelperFunctions.isPointOnLine(z, b, w, (float)0.8 * zoom);
 		} else {
 			return HelperFunctions.isPointOnLine(a, b, c, (float)0.8 * zoom);
 		}

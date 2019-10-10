@@ -152,7 +152,7 @@ public class Game {
 		applet.scale(this.zoom);
 		applet.background(255);
 		
-		for (Wire w: this.wires) { w.draw(applet); }
+		for (Wire w: this.wires) { w.draw(applet, this.translate, this.zoom); }
 		
 		//draw line from selectedConnection to mouse
 		if (this.selectedConnection != null) {
@@ -176,6 +176,7 @@ public class Game {
 		}
 		applet.popMatrix();
 		this.hud.draw(applet, this);
+		
 		if (this.states.get("saving")) {
 			applet.noStroke();
 			applet.fill(200, 200, 200, 150);
@@ -191,9 +192,9 @@ public class Game {
 			applet.fill(0);
 			int px = -bw / 2 + 15; //padding x
 			int py = -bh / 2 + 21; //padding y
-			applet.text("Save", applet.width / 2 + px, applet.height / 2 + py);
-			applet.text("Exit", applet.width / 2 + px + 5, applet.height / 2 + py + 36);
-			applet.text("Cancel", applet.width / 2 + px - 8, applet.height / 2 + py + 71);
+			applet.text("Save", applet.width / 2 + px, applet.height / 2 + py - 18);
+			applet.text("Exit", applet.width / 2 + px + 5, applet.height / 2 + py + 18);
+			applet.text("Cancel", applet.width / 2 + px - 8, applet.height / 2 + py + 52);
 			applet.textSize(12);
 		}
 	}
