@@ -8,17 +8,17 @@
 //comment all classes - IMPORTANT now that I won't be sole dev
 //done: None
 
-
 //Taken from GitHub - close issue and delete line once 1000% fixed. Some are not on GitHub (IDK work it out yourself)
 
 //make connections easier to click on? #2
 
 //Add 'changes were made do u want to save pwese' on file open #16
-//Fix the damn and gate red outline!
-//failsafe for opening multiple save dialogs or similar
+//Fix the damn and gate red outline! #18
+//failsafe for opening multiple save dialogs or similar 
 //When selecting component, first time does not show wire to mouse #11 NEEDS VERIFICATION
-//In wire mode false, wire click detection is slightly off
-//Minor visual bug where sometimes the wrong connections outlined in red NEEDS VERIFICATION --sorta-verified
+//In wire mode false, wire click detection is slightly off #19
+//Minor visual bug where sometimes the wrong/no connections outlined in red NEEDS VERIFICATION --sorta-verified
+//Fix topright UI text (slightly off) #20
 
 //these issues need verification to show if they have been fixed
 //ometimes wires don't get copied - AFTER CTRL-Z -MAYBE FIXED
