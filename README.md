@@ -25,3 +25,7 @@ See licence.txt.
 ### Processing
 
 This program uses the Processing library (https://processing.org/) and I have included a copy of their licence at licence-processing.txt.
+
+## Critical bugs
+
+As this is a new (and alpha) project, there are a few recognised critical bugs in the codebase. Most of the bugs arise from the behaviour of ctrl-z. To completely remove the chance that these bugs happen then after ctrl-z'ing, save the file and reopen the program therefore it is impossible for the bugs to occur. I'm working to resolve the bugs however it is insanely complex.

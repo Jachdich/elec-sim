@@ -13,17 +13,17 @@
 
 //make connections easier to click on? #2
 
-//Wire selection only works in wire mode false; #8
-//When selecting component, first time does not show wire to mouse #11 NEEDS VERIFICATION
-//add new/close button #13 FIXED
-//undo does not properly work with moving components #17 FIXED
-//Minor visual bug where sometimes the wrong connections outlined in red
 //Add 'changes were made do u want to save pwese' on file open #16
 //Fix the damn and gate red outline!
 //failsafe for opening multiple save dialogs or similar
-//HELP ME PLEASE - sometimes wires don't get copied
-//Sometimes the selection square does not appear
-//Wires STILL don't get selected properly with ctrl-a
+//When selecting component, first time does not show wire to mouse #11 NEEDS VERIFICATION
+//In wire mode false, wire click detection is slightly off
+//Minor visual bug where sometimes the wrong connections outlined in red NEEDS VERIFICATION --sorta-verified
+
+//these issues need verification to show if they have been fixed
+//ometimes wires don't get copied - AFTER CTRL-Z -MAYBE FIXED
+//Sometimes the selection square does not appear -MAYBE FIXED IDK
+//Wires STILL don't get selected properly with ctrl-a -MAYBE FIXED
 
 //Component suggestions:
 //Clock - adjustable freq?????? HOW
@@ -271,12 +271,12 @@ public class Game {
 	}
 	
 	public void updateUndoHistory() {
-		this.undoHistory.add(new HistorySave(this.components, this.wires));
+		this.undoHistory.add(new HistorySave(this.components, this.wires, this.selectedComponents, this.selectedWires));
 		this.redoHistory.clear();
 	}
 	
 	public void updateRedoHistory() {
-		this.redoHistory.add(new HistorySave(this.components, this.wires));
+		this.redoHistory.add(new HistorySave(this.components, this.wires, this.selectedComponents, this.selectedWires));
 	}
 	
 	public void undo() {
@@ -304,7 +304,7 @@ public class Game {
 		//get last history point and replace components and wires
 		int size = this.redoHistory.size();
 		if (size - 1 < 0) { return; }
-		this.undoHistory.add(new HistorySave(this.components, this.wires));
+		this.undoHistory.add(new HistorySave(this.components, this.wires, this.selectedComponents, this.selectedWires));
 		HistorySave h = this.redoHistory.get(size - 1);
 		this.redoHistory.remove(size - 1);
 		this.wires = h.wires;
@@ -411,6 +411,9 @@ public class Game {
 
 	private void paste() {
 		//deselect the currently selected components & wires
+		
+		this.updateUndoHistory();
+		
 		for (Component c: this.selectedComponents) {
 			c.deSelect();
 		}
@@ -709,6 +712,9 @@ public class Game {
 		if (this.keys.ctrl() && !this.keys.shift() && this.keys.get(86)) { this.paste(); }					//ctrl+v = paste
 		if (this.keys.ctrl() && !this.keys.shift() && this.keys.get(65)) { this.selectAll(); }				//ctrl+a = select all
 		if (this.keys.ctrl() && !this.keys.shift() && this.keys.get(78)) { this.newFile(); }				//ctrl+n = new
+		
+		if (this.keys.get('b')) { this.breakFunc(); } //break on demand
+		
 		if (this.keys.get('y') && !this.keys.shift() && !this.keys.ctrl()) {								//y = switch wire mode
 			this.states.put("wireMode", !this.states.get("wireMode"));
 			for (Wire w: this.wires) {
@@ -744,5 +750,11 @@ public class Game {
 		for (int i = 0; i < 100; i++) {
 			for (Wire w: this.wires) { w.update(); }
 		}
+	}
+	
+	private void breakFunc() {
+		int xasd = 0;
+		xasd += 1;
+		System.out.println(xasd);
 	}
 }
