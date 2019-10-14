@@ -63,7 +63,7 @@ public class hud {
 		this.drawButtons(applet, game);
 		
 		applet.fill(0);
-		applet.text("Tool (t)", applet.width - 46, 10);
+		applet.text("Tool (t)", applet.width - 46, 5);
 		if (game.selectedTool[0] == "wire") {
 			applet.stroke(0);
 			applet.line(applet.width - 20, 30, applet.width - 10, 20);
@@ -76,7 +76,7 @@ public class hud {
 		
 		applet.stroke(0);
 		applet.fill(0);
-		applet.text("Wire mode (y)", applet.width - 87, 54);
+		applet.text("Wire mode (y)", applet.width - 87, 42);
 		if (game.states.get("wireMode")) {
 			applet.line(applet.width - 20, 65, applet.width - 5, 65);
 			applet.line(applet.width - 5, 65, applet.width - 5, 75);

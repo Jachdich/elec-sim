@@ -11,7 +11,6 @@
 //Taken from GitHub - close issue and delete line once 1000% fixed. Some are not on GitHub (IDK work it out yourself)
 
 //make connections easier to click on? #2
-
 //Add 'changes were made do u want to save pwese' on file open #16
 //Fix the damn and gate red outline! #18
 //failsafe for opening multiple save dialogs or similar 
