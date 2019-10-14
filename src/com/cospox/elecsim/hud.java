@@ -3,7 +3,6 @@ package com.cospox.elecsim;
 import java.util.HashMap;
 
 import processing.core.PApplet;
-import processing.core.PFont;
 import processing.core.PImage;
 
 public class hud {

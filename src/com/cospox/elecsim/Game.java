@@ -1,39 +1,41 @@
-//TODO
-
-//Some issues here are mirrored from GitHub. These are mostly user-level issues/bugs.
-//Code style bugs/issues/anything else goes here.
-
-//move more things from game class to seperate classes?
-//refactor/clean up Game class and other classes - especially now that the wire copying works, it's very messy
-//comment all classes - IMPORTANT now that I won't be sole dev
-//done: None
-
-//Taken from GitHub - close issue and delete line once 1000% fixed. Some are not on GitHub (IDK work it out yourself)
-
-//make connections easier to click on? #2
-//Add 'changes were made do u want to save pwese' on file open #16
-//Fix the damn and gate red outline! #18
-//failsafe for opening multiple save dialogs or similar 
-//When selecting component, first time does not show wire to mouse #11 NEEDS VERIFICATION
-//In wire mode false, wire click detection is slightly off #19
-//Minor visual bug where sometimes the wrong/no connections outlined in red NEEDS VERIFICATION --sorta-verified
-//Fix topright UI text (slightly off) #20
-
-//these issues need verification to show if they have been fixed
-//ometimes wires don't get copied - AFTER CTRL-Z -MAYBE FIXED
-//Sometimes the selection square does not appear -MAYBE FIXED IDK
-//Wires STILL don't get selected properly with ctrl-a -MAYBE FIXED
-
-//Component suggestions:
-//Clock - adjustable freq?????? HOW
-//Logic blocks/ICs/logic mode and (existing)IC mode/User-created ICs/packages/things like rsnor IDK
-
-//Feature suggestion:
-//Snap to grid mode 
-//Settings menu & logic iterations per frame setting #9
-//Add ignore button to path error message
-//Keyboard shortcut menu (ctrl-z and others that aren't intrinsically shown)
-//LABELS/COMMENTS! COOL
+/*
+ * TODO
+ * 
+ * Some issues here are mirrored from GitHub. These are mostly user-level issues/bugs.
+ * Code style bugs/issues/anything else goes here.
+ *
+ *move more things from game class to seperate classes?
+ *refactor/clean up Game class and other classes - especially now that the wire copying works, it's very messy
+ *comment all classes - IMPORTANT now that I won't be sole dev
+ *done: None
+ *
+ *Taken from GitHub - close issue and delete line once 1000% fixed. Some are not on GitHub (IDK work it out yourself)
+ *
+ *make connections easier to click on? #2
+ *Add 'changes were made do u want to save pwese' on file open #16
+ *Fix the damn and gate red outline! #18
+ *failsafe for opening multiple save dialogs or similar 
+ *When selecting component, first time does not show wire to mouse #11 NEEDS VERIFICATION
+ *In wire mode false, wire click detection is slightly off #19
+ *Minor visual bug where sometimes the wrong/no connections outlined in red NEEDS VERIFICATION --sorta-verified
+ *Some UI elements don't respond to font size changes #21
+ *these issues need verification to show if they have been fixed
+ *ometimes wires don't get copied - AFTER CTRL-Z -MAYBE FIXED
+ *Sometimes the selection square does not appear -MAYBE FIXED IDK
+ *Wires STILL don't get selected properly with ctrl-a -MAYBE FIXED
+ *
+ *Component suggestions:
+ *Clock - adjustable freq?????? HOW
+ *Logic blocks/ICs/logic mode and (existing)IC mode/User-created ICs/packages/things like rsnor IDK
+ *
+ *Feature suggestion:
+ *Snap to grid mode 
+ *Settings menu & logic iterations per frame setting #9
+ *Add ignore button to path error message
+ *Keyboard shortcut menu (ctrl-z and others that aren't intrinsically shown)
+ *LABELS/COMMENTS! COOL
+ *
+*/
 
 package com.cospox.elecsim;
 import java.io.File;
@@ -524,7 +526,7 @@ public class Game {
 		//find (x, y) of top left corner
 		//and the width and height of the rectangle
 		//by brute force: we don't know which corner 
-		//Vector a and Vector b represent.
+		//Vector a and Vector b represent.applet
 		float rx, ry, w, h;
 		if (y.x > x.x) {
 			w  = y.x - x.x;

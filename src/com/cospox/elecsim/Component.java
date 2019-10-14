@@ -39,17 +39,21 @@ public class Component {
 		return null;
 	}
 	public void setX(float x) {
-		for (Connection c: this.connections) {
-			c.pos.x += x - this.pos.x;
-		}
+		//for (Connection c: this.connections) {
+		//	c.pos.x += x - this.pos.x;
+		//}
+		
 		this.pos.x = x;
+		this.updateConnectionsPos();
 	}
 
 	public void setY(float y) {
-		for (Connection c: this.connections) {
-			c.pos.y += y - this.pos.y;
-		}
+		//for (Connection c: this.connections) {
+		//	c.pos.y += y - this.pos.y;
+		//}
+		
 		this.pos.y = y;
+		this.updateConnectionsPos();
 	}
 
 	public void select() {

@@ -31,6 +31,10 @@ public class HelperFunctions {
 		
 		double dist = top / bottom;
 		
+		//if (a.x == c.x) { 
+		//	System.out.println(a.toString() + b.toString() + c.toString());
+		//	return true; 
+		//} 
 		if (!(dist < threshhold)) { return false; }
 		if (b.x < c.x) { return false; }
 		if (b.y > (a.y >= c.y ? a : c).y) { return false; }
@@ -71,5 +75,9 @@ public class HelperFunctions {
 			return true;
 		}
 		return false;
+	}
+	
+	public static float snap(float x) {
+		return Math.round(x * 8) / 8;
 	}
 }
