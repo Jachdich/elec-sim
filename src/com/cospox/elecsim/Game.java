@@ -13,7 +13,8 @@
  *
  *make connections easier to click on? #2
  *
- *ONLY ANDGATES SNAP TO GRID
+ *When dragging multiple components in snap to grid mode, its not smooth at all
+ *snap to grid mode setting
  *
  *Add 'changes were made do u want to save pwese' on file open #16
  *Fix the damn and gate red outline! #18
@@ -720,6 +721,7 @@ public class Game {
 		if (this.keys.ctrl() && !this.keys.shift() && this.keys.get(78)) { this.newFile(); }				//ctrl+n = new
 		
 		if (this.keys.get('b')) { this.breakFunc(); } //break on demand
+		if (this.keys.get('r')) { this.addNewComponent("IC", new Vector()); }
 		
 		if (this.keys.get('y') && !this.keys.shift() && !this.keys.ctrl()) {								//y = switch wire mode
 			this.states.put("wireMode", !this.states.get("wireMode"));

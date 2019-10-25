@@ -20,6 +20,8 @@ public class ComponentGenerator {
 			return new HighSource(pos, posInArray);
 		case "LowSource":
 			return new LowSource(pos, posInArray);
+		case "IC":
+			return new AT28C256(pos, posInArray);
 		default:
 			Errors.error("Unknown component '" + name + "'");
 			return null;
