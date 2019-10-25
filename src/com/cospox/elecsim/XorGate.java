@@ -8,38 +8,44 @@ public class XorGate extends Component {
 		super(pos, posInArray);
 		this.TYPE = "XorGate";
 		this.connections = new Connection[3];
-		this.connections[0] = new Connection(new Vector(this.pos.x + 5, this.pos.y - Connection.HEIGHT + 4),
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		this.connections[0] = new Connection(new Vector(x + 5, y - Connection.HEIGHT + 4),
 											 new Vector(posInArray, 0)); //input A
-		this.connections[1] = new Connection(new Vector(this.pos.x + 25 - Connection.WIDTH, this.pos.y - Connection.HEIGHT + 4),
+		this.connections[1] = new Connection(new Vector(x + 25 - Connection.WIDTH, y - Connection.HEIGHT + 4),
 											 new Vector(posInArray, 1)); //input B
-		this.connections[2] = new Connection(new Vector(this.pos.x + 15 - Connection.WIDTH / 2, this.pos.y + 30),
+		this.connections[2] = new Connection(new Vector(x + 15 - Connection.WIDTH / 2, y + 30),
 											 new Vector(posInArray, 2)); //output
 	}
 	
 	@Override
 	public void updateConnectionsPos() {
-		this.connections[0].pos = new Vector(this.pos.x + 5, this.pos.y - Connection.HEIGHT + 4);
-		this.connections[1].pos = new Vector(this.pos.x + 25 - Connection.WIDTH, this.pos.y - Connection.HEIGHT + 4);
-		this.connections[2].pos = new Vector(this.pos.x + 15 - Connection.WIDTH / 2, this.pos.y + 30);
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		this.connections[0].pos = new Vector(x + 5, y - Connection.HEIGHT + 4);
+		this.connections[1].pos = new Vector(x + 25 - Connection.WIDTH, y - Connection.HEIGHT + 4);
+		this.connections[2].pos = new Vector(x + 15 - Connection.WIDTH / 2, y + 30);
 	}
 
 	@Override
 	public void draw(PApplet applet) {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
 		applet.noStroke();
 		applet.fill(100);
-		applet.rect(this.pos.x,  this.pos.y, 30, 15);
+		applet.rect(x, y, 30, 15);
 		if (this.selected) { applet.stroke(255, 20, 20); }
 		else { applet.noStroke(); }
-		applet.line(this.pos.x, this.pos.y, this.pos.x, this.pos.y + 15);
-		applet.line(this.pos.x + 30, this.pos.y, this.pos.x + 30, this.pos.y + 15);
-		applet.arc(this.pos.x + 15, this.pos.y + 15, 30, 30, 0, PConstants.PI, PConstants.OPEN);
+		applet.line(x, y, x, y + 15);
+		applet.line(x + 30, y, x + 30, y + 15);
+		applet.arc(x + 15, y + 15, 30, 30, 0, PConstants.PI, PConstants.OPEN);
 		applet.fill(255);
-		applet.arc(this.pos.x + 15, this.pos.y - 4, 30, 30, (float)0.26, PConstants.PI - (float)0.26, PConstants.OPEN);
+		applet.arc(x + 15, y - 4, 30, 30, (float)0.26, PConstants.PI - (float)0.26, PConstants.OPEN);
 		applet.noFill();
 		if (this.selected) { applet.stroke(255, 20, 20); }
 		else { applet.stroke(100); }
 		applet.strokeWeight(2);
-		applet.arc(this.pos.x + 15, this.pos.y - 5, 26, 26, (float)0.26, PConstants.PI - (float)0.26, PConstants.OPEN);
+		applet.arc(x + 15, y - 5, 26, 26, (float)0.26, PConstants.PI - (float)0.26, PConstants.OPEN);
 		applet.strokeWeight(1);
 		applet.noStroke();
 		for (Connection c: this.connections) {
@@ -60,8 +66,10 @@ public class XorGate extends Component {
 
 	@Override
 	public boolean isMouseIntersecting(Vector pos, float zoom, Vector translate) {
-		float x = translate.x + this.pos.x * zoom;
-		float y = translate.y + this.pos.y * zoom;
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		x = translate.x + x * zoom;
+		y = translate.y + y * zoom;
 		return HelperFunctions.isInsideRect(pos.x, pos.y, x, y, 30 * zoom, 30 * zoom);
 	}
 	

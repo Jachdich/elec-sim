@@ -78,6 +78,6 @@ public class HelperFunctions {
 	}
 	
 	public static float snap(float x) {
-		return Math.round(x * 8) / 8;
+		return Math.round(x / 7) * 7F;
 	}
 }

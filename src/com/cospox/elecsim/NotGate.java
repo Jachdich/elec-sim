@@ -7,23 +7,29 @@ public class NotGate extends Component {
 		super(pos, posInArray);
 		this.TYPE = "NotGate";
 		this.connections = new Connection[2];
-		this.connections[0] = new Connection(new Vector(pos.x + 14, pos.y - 10), new Vector(posInArray, 0));
-		this.connections[1] = new Connection(new Vector(pos.x + 14, pos.y + 34), new Vector(posInArray, 1));
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		this.connections[0] = new Connection(new Vector(x + 14, y - 10), new Vector(posInArray, 0));
+		this.connections[1] = new Connection(new Vector(x + 14, y + 34), new Vector(posInArray, 1));
 	}
 	
 	@Override
 	public void updateConnectionsPos() {
-		this.connections[0].pos = new Vector(pos.x + 14, pos.y - 10);
-		this.connections[1].pos = new Vector(pos.x + 14, pos.y + 34);
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		this.connections[0].pos = new Vector(x + 14, y - 10);
+		this.connections[1].pos = new Vector(x + 14, y + 34);
 	}
 
 	@Override
 	public void draw(PApplet applet) {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
 		if (this.selected) { applet.stroke(255, 0, 0); }
 		else { applet.noStroke(); }
 		applet.fill(100);
-		applet.triangle(this.pos.x, this.pos.y, this.pos.x + 30, this.pos.y, this.pos.x + 15, this.pos.y + 30);
-		applet.arc(this.pos.x + 15, this.pos.y + 30, 8, 8, (float)-1.11, (float)4.25);
+		applet.triangle(x, y, x + 30, y, x + 15, y + 30);
+		applet.arc(x + 15, y + 30, 8, 8, (float)-1.11, (float)4.25);
 		for (Connection c: this.connections) {
 			c.draw(applet);
 		}
@@ -44,8 +50,10 @@ public class NotGate extends Component {
 	
 	@Override
 	public boolean isMouseIntersecting(Vector pos, float zoom, Vector translate) {
-		float x = translate.x + this.pos.x * zoom;
-		float y = translate.y + this.pos.y * zoom;
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		x = translate.x + x * zoom;
+		y = translate.y + y * zoom;
 		if (HelperFunctions.isInsideTriangle(pos,
 				new Vector(x, y),
 				new Vector(x + 30 * zoom, y),

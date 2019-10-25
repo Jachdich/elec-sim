@@ -12,15 +12,20 @@
  *Taken from GitHub - close issue and delete line once 1000% fixed. Some are not on GitHub (IDK work it out yourself)
  *
  *make connections easier to click on? #2
+ *
+ *ONLY ANDGATES SNAP TO GRID
+ *
  *Add 'changes were made do u want to save pwese' on file open #16
  *Fix the damn and gate red outline! #18
  *failsafe for opening multiple save dialogs or similar 
- *When selecting component, first time does not show wire to mouse #11 NEEDS VERIFICATION
+ *When selecting component, first time does not show wire to mouse #11 NEEDS VERIFICATION VERIFIED, not just first time (snap to grid created issue)
  *In wire mode false, wire click detection is slightly off #19
  *Minor visual bug where sometimes the wrong/no connections outlined in red NEEDS VERIFICATION --sorta-verified
  *Some UI elements don't respond to font size changes #21
+ *
  *these issues need verification to show if they have been fixed
- *ometimes wires don't get copied - AFTER CTRL-Z -MAYBE FIXED
+ *
+ *Sometimes wires don't get copied - AFTER CTRL-Z -MAYBE FIXED
  *Sometimes the selection square does not appear -MAYBE FIXED IDK
  *Wires STILL don't get selected properly with ctrl-a -MAYBE FIXED
  *
@@ -29,7 +34,7 @@
  *Logic blocks/ICs/logic mode and (existing)IC mode/User-created ICs/packages/things like rsnor IDK
  *
  *Feature suggestion:
- *Snap to grid mode 
+ *Snap to grid mode #22, added! needs work? add setting to show how course the grid is?
  *Settings menu & logic iterations per frame setting #9
  *Add ignore button to path error message
  *Keyboard shortcut menu (ctrl-z and others that aren't intrinsically shown)

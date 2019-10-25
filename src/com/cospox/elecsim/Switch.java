@@ -10,30 +10,38 @@ public class Switch extends Component {
 		super(pos, posInArray);
 		this.TYPE = "Switch";
 		this.connections = new Connection[1];
-		this.connections[0] = new Connection(new Vector(this.pos.x, this.pos.y + this.radius),
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		this.connections[0] = new Connection(new Vector(x, y + this.radius),
 											 new Vector(posInArray, 0));
 	}
 	
 	@Override
 	public void updateConnectionsPos() {
-		this.connections[0].pos = new Vector(this.pos.x, this.pos.y + this.radius);
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		this.connections[0].pos = new Vector(x, y + this.radius);
 	}
 
 	@Override
 	public void draw(PApplet applet) {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
 		if (this.on) { applet.fill(200); }
 		else { applet.fill(100); }
 
 		if (this.selected) { applet.stroke(255, 20, 20); }
 		else { applet.noStroke(); }
-		applet.circle(this.pos.x, this.pos.y, this.radius * 2);
+		applet.circle(x, y, this.radius * 2);
 		this.connections[0].draw(applet);
 	}
 
 	@Override
 	public void onMousePressed(PApplet applet, float zoom, Vector translate) {
-		float x = translate.x + this.pos.x * zoom;
-		float y = translate.y + this.pos.y * zoom;
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		x = translate.x + x * zoom;
+		y = translate.y + y * zoom;
 		if (PApplet.dist(x, y, applet.mouseX, applet.mouseY) < this.radius * zoom) {
 			this.on = !this.on;
 		}
@@ -50,8 +58,10 @@ public class Switch extends Component {
 
 	@Override
 	public boolean isMouseIntersecting(Vector pos, float zoom, Vector translate) {
-		float x = translate.x + this.pos.x * zoom;
-		float y = translate.y + this.pos.y * zoom;
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		x = translate.x + x * zoom;
+		y = translate.y + y * zoom;
 		if (HelperFunctions.isInsideCircle(pos, new Vector(x, y), this.radius * zoom)) {
 			return true;
 		}

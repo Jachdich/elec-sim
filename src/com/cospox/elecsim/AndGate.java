@@ -8,19 +8,25 @@ public class AndGate extends Component {
 		super(pos, posInArray);
 		this.TYPE = "AndGate";
 		this.connections = new Connection[3];
-		this.connections[0] = new Connection(new Vector(HelperFunctions.snap(this.pos.x), HelperFunctions.snap(this.pos.y) - Connection.HEIGHT),
+		
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		
+		this.connections[0] = new Connection(new Vector(x, y - Connection.HEIGHT),
 											 new Vector(posInArray, 0)); //input A
-		this.connections[1] = new Connection(new Vector(HelperFunctions.snap(this.pos.x) + 30 - Connection.WIDTH, HelperFunctions.snap(this.pos.y) - Connection.HEIGHT),
+		this.connections[1] = new Connection(new Vector(x + 30 - Connection.WIDTH, y - Connection.HEIGHT),
 											 new Vector(posInArray, 1)); //input B
-		this.connections[2] = new Connection(new Vector(HelperFunctions.snap(this.pos.x) + 15 - Connection.WIDTH / 2, HelperFunctions.snap(this.pos.y) + 30),
+		this.connections[2] = new Connection(new Vector(x + 15 - Connection.WIDTH / 2, y + 30),
 											 new Vector(posInArray, 2)); //output
 	}
 	
 	@Override
 	public void updateConnectionsPos() {
-		this.connections[0].pos = new Vector(HelperFunctions.snap(this.pos.x), HelperFunctions.snap(this.pos.y) - Connection.HEIGHT);
-		this.connections[1].pos = new Vector(HelperFunctions.snap(this.pos.x) + 30 - Connection.WIDTH, HelperFunctions.snap(this.pos.y) - Connection.HEIGHT);
-		this.connections[2].pos = new Vector(HelperFunctions.snap(this.pos.x) + 15 - Connection.WIDTH / 2, HelperFunctions.snap(this.pos.y) + 30);
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		this.connections[0].pos = new Vector(x, y - Connection.HEIGHT);
+		this.connections[1].pos = new Vector(x + 30 - Connection.WIDTH, y - Connection.HEIGHT);
+		this.connections[2].pos = new Vector(x + 15 - Connection.WIDTH / 2, y + 30);
 	}
 
 	@Override
@@ -50,8 +56,10 @@ public class AndGate extends Component {
 
 	@Override
 	public boolean isMouseIntersecting(Vector pos, float zoom, Vector translate) {
-		float x = translate.x + this.pos.x * zoom;
-		float y = translate.y + this.pos.y * zoom;
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		x = translate.x + x * zoom;
+		y = translate.y + y * zoom;
 		return HelperFunctions.isInsideRect(pos.x, pos.y, x, y, 30 * zoom, 30 * zoom);
 	}
 	

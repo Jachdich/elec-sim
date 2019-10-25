@@ -7,30 +7,38 @@ public class Joint extends Component {
 		super(pos, posInArray);
 		this.TYPE = "Joint";
 		this.connections = new Connection[1];
-		this.connections[0] = new Connection(new Vector(this.pos.x, this.pos.y),
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		this.connections[0] = new Connection(new Vector(x, y),
 											 new Vector(posInArray, 0));
 	}
 	
 	@Override
 	public void updateConnectionsPos() {
-		this.connections[0].pos = new Vector(this.pos.x, this.pos.y);
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		this.connections[0].pos = new Vector(x, y);
 	}
 	
 	@Override
 	public void draw(PApplet applet) {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
 		if (this.connections[0].on) { applet.fill(200); }
 		else { applet.fill(100); }
 		
 		if (this.selected) { applet.stroke(255, 20, 20); }
 		else { applet.noStroke(); }
 		
-		applet.circle(this.pos.x, this.pos.y, 8);
+		applet.circle(x, y, 8);
 	}
 	
 	@Override
 	public boolean isMouseIntersecting(Vector pos, float zoom, Vector translate) {
-		float x = translate.x + this.pos.x * zoom;
-		float y = translate.y + this.pos.y * zoom;
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		x = translate.x + x * zoom;
+		y = translate.y + y * zoom;
 		return HelperFunctions.isInsideCircle(new Vector(pos.x, pos.y), new Vector(x, y), 6);
 	}
 	

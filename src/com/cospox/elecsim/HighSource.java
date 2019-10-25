@@ -7,29 +7,33 @@ public class HighSource extends Component {
 		super(pos, posInArray);
 		this.TYPE = "HighSource";
 		this.connections = new Connection[1];
-		this.connections[0] = new Connection(new Vector(this.pos.x + 15 - Connection.WIDTH / 2.0F,
-											            this.pos.y + 20),
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		this.connections[0] = new Connection(new Vector(x + 15 - Connection.WIDTH / 2.0F, y + 20),
 											 new Vector(posInArray, 0)); //output
 	}
 	
 	@Override
 	public void updateConnectionsPos() {
-		this.connections[0].pos = new Vector(this.pos.x + 15 - Connection.WIDTH / 2.0F,
-				 this.pos.y + 20);
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		this.connections[0].pos = new Vector(x + 15 - Connection.WIDTH / 2.0F, y + 20);
 	}
 
 	@Override
 	public void draw(PApplet applet) {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
 		if (this.selected) { applet.stroke(255, 20, 20); }
 		else { applet.noStroke(); }
 		
 		float T_HEIGHT = applet.textAscent() + applet.textDescent();
 		
 		applet.fill(100);
-		applet.rect(this.pos.x, this.pos.y, 30, 20);
+		applet.rect(x, y, 30, 20);
 		//applet.textSize(10);
 		applet.fill(20);
-		applet.text("1", this.pos.x + 12, this.pos.y + T_HEIGHT - 12);
+		applet.text("1", x + 12, y + T_HEIGHT - 12);
 		//applet.textSize(11.9F);
 		for (Connection c: this.connections) {
 			c.draw(applet);
@@ -43,8 +47,10 @@ public class HighSource extends Component {
 
 	@Override
 	public boolean isMouseIntersecting(Vector pos, float zoom, Vector translate) {
-		float x = translate.x + this.pos.x * zoom;
-		float y = translate.y + this.pos.y * zoom;
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		x = translate.x + x * zoom;
+		y = translate.y + y * zoom;
 		return HelperFunctions.isInsideRect(pos.x, pos.y, x, y, 30 * zoom, 20 * zoom);
 	}
 	
