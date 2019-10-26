@@ -50,6 +50,8 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import com.cospox.elecsim.components.Component;
+
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PFont;
@@ -721,7 +723,7 @@ public class Game {
 		if (this.keys.ctrl() && !this.keys.shift() && this.keys.get(78)) { this.newFile(); }				//ctrl+n = new
 		
 		if (this.keys.get('b')) { this.breakFunc(); } //break on demand
-		if (this.keys.get('r')) { this.addNewComponent("IC", new Vector()); }
+		if (this.keys.get('r')) { this.addNewComponent("AT28C256", new Vector()); }
 		
 		if (this.keys.get('y') && !this.keys.shift() && !this.keys.ctrl()) {								//y = switch wire mode
 			this.states.put("wireMode", !this.states.get("wireMode"));

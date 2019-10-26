@@ -2,6 +2,8 @@ package com.cospox.elecsim;
 
 import java.util.ArrayList;
 
+import com.cospox.elecsim.components.Component;
+
 public class ComponentEncoder {
 	public static Wire unpackWireCall(String call, ArrayList<Component> components) {
 		//convert 'Wire(args)' into needed info to construct a Wire object

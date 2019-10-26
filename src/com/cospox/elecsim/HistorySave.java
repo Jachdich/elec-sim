@@ -2,6 +2,8 @@ package com.cospox.elecsim;
 
 import java.util.ArrayList;
 
+import com.cospox.elecsim.components.Component;
+
 public class HistorySave {
 	ArrayList<Component> components = new ArrayList<Component>();
 	ArrayList<Wire>      wires      = new ArrayList<Wire>();

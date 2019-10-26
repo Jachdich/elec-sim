@@ -1,6 +1,10 @@
-package com.cospox.elecsim;
+package com.cospox.elecsim.components;
 
 import java.util.HashMap;
+
+import com.cospox.elecsim.Connection;
+import com.cospox.elecsim.HelperFunctions;
+import com.cospox.elecsim.Vector;
 
 import processing.core.PApplet;
 

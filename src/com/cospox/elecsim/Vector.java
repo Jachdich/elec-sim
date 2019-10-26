@@ -1,7 +1,8 @@
 package com.cospox.elecsim;
 
 public class Vector {
-	float x, y;
+	public float x;
+	public float y;
 	public Vector() {
 		this.x = 0;
 		this.y = 0;

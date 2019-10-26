@@ -1,5 +1,7 @@
 package com.cospox.elecsim;
 
+import com.cospox.elecsim.components.Component;
+
 import processing.core.PApplet;
 
 public class Wire {

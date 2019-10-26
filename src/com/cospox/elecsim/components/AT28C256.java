@@ -1,4 +1,7 @@
-package com.cospox.elecsim;
+package com.cospox.elecsim.components;
+
+import com.cospox.elecsim.Connection;
+import com.cospox.elecsim.Vector;
 
 public class AT28C256 extends IC {
 	
@@ -26,7 +29,7 @@ public class AT28C256 extends IC {
 		
 		//System.out.println(we + " " + ce + ", " + this.previousWE + " " + this.previousCE);
 		
-		if ((we && ce && !this.previousWE) || (we && ce && !this.previousCE)) {
+		if (((we && ce && !this.previousWE) || (we && ce && !this.previousCE)) && !oe) {
 			//rising edge of either WE or CE, with the other one high
 			int address = 0;
 			for (int pin: ADDR_PINS) {
@@ -36,24 +39,24 @@ public class AT28C256 extends IC {
 			for (int pin: IO_PINS) {
 				data = (byte)(data << 1 | (this.connections[pin].on ? 1 : 0));
 			}
+			this.memory[address] = data;
+			
 		}
 		
-		if (oe && ce && !this.previousOE) {
-			//rising edge of either WE or CE, with the other one high
+		if (oe && ce && !we) {
 			int address = 0;
 			for (int pin: ADDR_PINS) {
 				address = address << 1 | (this.connections[pin].on ? 1 : 0);
 			}
 			byte data = this.memory[address];
 			for (int i = 0; i < 8; i++) {
-				boolean bit = ((data << i) & 0x1) == 0 ? false : true;
+				boolean bit = ((data >> i) & 0x1) == 0 ? false : true;
 				if (bit) {
-					output[IO_PINS[i]] = true;
+					output[IO_PINS[7 - i]] = true;
 				} else {
-					output[IO_PINS[i]] = false;
+					output[IO_PINS[7 - i]] = false;
 				}
 			}
-			this.memory[address] = data;
 		}
 		
 		for (int i = 0; i < this.connections.length; i++) {
@@ -68,6 +71,6 @@ public class AT28C256 extends IC {
 		
 		this.previousWE = we;
 		this.previousCE = ce;
-		this.previousCE = oe;
+		this.previousOE = oe;
 	}
 }
