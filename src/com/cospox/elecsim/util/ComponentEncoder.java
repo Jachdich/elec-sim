@@ -1,7 +1,8 @@
-package com.cospox.elecsim;
+package com.cospox.elecsim.util;
 
 import java.util.ArrayList;
 
+import com.cospox.elecsim.Wire;
 import com.cospox.elecsim.components.Component;
 
 public class ComponentEncoder {

@@ -1,8 +1,10 @@
 package com.cospox.elecsim;
 
+import com.cospox.elecsim.util.Global;
+import com.cospox.elecsim.util.HelperFunctions;
+
 import processing.core.PApplet;
 import processing.event.MouseEvent;
-import com.cospox.elecsim.Global;
 
 public class Main extends PApplet{
 	public Game game;

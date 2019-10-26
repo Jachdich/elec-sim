@@ -1,5 +1,7 @@
 package com.cospox.elecsim;
 
+import com.cospox.elecsim.util.Vector;
+
 import processing.core.PApplet;
 
 public class Connection {

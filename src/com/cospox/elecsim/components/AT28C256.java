@@ -1,7 +1,7 @@
 package com.cospox.elecsim.components;
 
 import com.cospox.elecsim.Connection;
-import com.cospox.elecsim.Vector;
+import com.cospox.elecsim.util.Vector;
 
 public class AT28C256 extends IC {
 	

@@ -51,6 +51,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.cospox.elecsim.components.Component;
+import com.cospox.elecsim.util.ComponentEncoder;
+import com.cospox.elecsim.util.ComponentGenerator;
+import com.cospox.elecsim.util.FileHandler;
+import com.cospox.elecsim.util.HelperFunctions;
+import com.cospox.elecsim.util.HistorySave;
+import com.cospox.elecsim.util.KeyHandler;
+import com.cospox.elecsim.util.Vector;
 
 import processing.core.PApplet;
 import processing.core.PConstants;
@@ -280,12 +287,12 @@ public class Game {
 	}
 	
 	public void updateUndoHistory() {
-		this.undoHistory.add(new HistorySave(this.components, this.wires, this.selectedComponents, this.selectedWires));
+		this.undoHistory.add(new HistorySave(this.components, this.wires));
 		this.redoHistory.clear();
 	}
 	
 	public void updateRedoHistory() {
-		this.redoHistory.add(new HistorySave(this.components, this.wires, this.selectedComponents, this.selectedWires));
+		this.redoHistory.add(new HistorySave(this.components, this.wires));
 	}
 	
 	public void undo() {
@@ -313,7 +320,7 @@ public class Game {
 		//get last history point and replace components and wires
 		int size = this.redoHistory.size();
 		if (size - 1 < 0) { return; }
-		this.undoHistory.add(new HistorySave(this.components, this.wires, this.selectedComponents, this.selectedWires));
+		this.undoHistory.add(new HistorySave(this.components, this.wires));
 		HistorySave h = this.redoHistory.get(size - 1);
 		this.redoHistory.remove(size - 1);
 		this.wires = h.wires;

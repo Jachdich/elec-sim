@@ -1,6 +1,8 @@
 package com.cospox.elecsim;
 
 import com.cospox.elecsim.components.Component;
+import com.cospox.elecsim.util.HelperFunctions;
+import com.cospox.elecsim.util.Vector;
 
 import processing.core.PApplet;
 

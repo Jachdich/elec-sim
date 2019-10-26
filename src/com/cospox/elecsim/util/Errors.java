@@ -1,4 +1,4 @@
-package com.cospox.elecsim;
+package com.cospox.elecsim.util;
 
 public class Errors {
 	public static void error(String message) {

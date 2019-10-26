@@ -1,4 +1,4 @@
-package com.cospox.elecsim;
+package com.cospox.elecsim.util;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;

@@ -1,5 +1,6 @@
-package com.cospox.elecsim;
+package com.cospox.elecsim.util;
 
+import com.cospox.elecsim.Connection;
 import com.cospox.elecsim.components.Component;
 
 import processing.core.PApplet;

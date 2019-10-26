@@ -2,6 +2,10 @@ package com.cospox.elecsim;
 
 import java.util.HashMap;
 
+import com.cospox.elecsim.util.Global;
+import com.cospox.elecsim.util.HelperFunctions;
+import com.cospox.elecsim.util.Vector;
+
 import processing.core.PApplet;
 import processing.core.PImage;
 

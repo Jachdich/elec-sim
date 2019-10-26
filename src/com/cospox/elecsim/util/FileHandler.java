@@ -1,4 +1,4 @@
-package com.cospox.elecsim;
+package com.cospox.elecsim.util;
 
 import java.io.BufferedReader;
 import java.io.File;
