@@ -1,5 +1,6 @@
 package com.cospox.elecsim;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.cospox.elecsim.util.Global;
@@ -10,41 +11,32 @@ import processing.core.PApplet;
 import processing.core.PImage;
 
 public class hud {
-	private HashMap<String, PImage> images = new HashMap<String, PImage>();
-	private final int NUM_COMPONENTS = 8;
+	private static HashMap<String, PImage> images = new HashMap<String, PImage>();
+	private static int NUM_COMPONENTS = 0;
 	private Vector mouseStart = new Vector();
 	public boolean canSelect = false;
 	private boolean[] buttonsPressed = new boolean[10];
 	
+	private static PApplet parent;
+	
 	private final static int PADDING_FACTOR = 4;
 	
+	private static ArrayList<String> buttons = new ArrayList<String>();
+	
 	public hud(PApplet applet) {
-		//Add new components
-		this.images.put("selectImage", applet.loadImage("assets/images/mouse.png"));
-		this.images.put("AndGate",     applet.loadImage("assets/images/and_gate.png"));
-		this.images.put("Switch",      applet.loadImage("assets/images/switch.png"));
-		this.images.put("OrGate",      applet.loadImage("assets/images/or_gate.png"));
-		this.images.put("XorGate",     applet.loadImage("assets/images/xor_gate.png"));
-		this.images.put("NotGate",     applet.loadImage("assets/images/not_gate.png"));
-		this.images.put("Joint",       applet.loadImage("assets/images/joint.png"));
-		this.images.put("HighSource",  applet.loadImage("assets/images/high.png"));
-		this.images.put("LowSource",   applet.loadImage("assets/images/low.png"));
-
-		//Add new components
-		this.addSmallImage("OrGate");
-		this.addSmallImage("AndGate");
-		this.addSmallImage("Switch");
-		this.addSmallImage("XorGate");
-		this.addSmallImage("NotGate");
-		this.addSmallImage("Joint");
-		this.addSmallImage("HighSource");
-		this.addSmallImage("LowSource");
+		hud.parent = applet;
+		hud.images.put("selectImage", applet.loadImage("assets/images/mouse.png"));
+	}
+	
+	public static void addImage(String name) {
+		hud.images.put(name, parent.loadImage("assets/images/" + name + ".png"));
+		hud.addSmallImage(name);
 	}
 
-	private void addSmallImage(String imageName) {
-		PImage temp = this.images.get(imageName).copy();
+	private static void addSmallImage(String imageName) {
+		PImage temp = hud.images.get(imageName).copy();
 		temp.resize(20, 20);
-		this.images.put(imageName + "S", temp);
+		hud.images.put(imageName + "S", temp);
 	}
 
 	public void draw(PApplet applet, Game game) {
@@ -71,10 +63,10 @@ public class hud {
 			applet.stroke(0);
 			applet.line(applet.width - 20, 30, applet.width - 10, 20);
 		} else if (game.selectedTool[0] == "component") {
-			PImage i = this.images.get(game.selectedComponent + "S");
+			PImage i = hud.images.get(game.selectedComponent + "S");
 			applet.image(i, applet.width - 20, 20);
 		} else if (game.selectedTool[0] == "select") {
-			applet.image(this.images.get("selectImage"), applet.width - 20, 20);
+			applet.image(hud.images.get("selectImage"), applet.width - 20, 20);
 		}
 		
 		applet.stroke(0);
@@ -86,14 +78,11 @@ public class hud {
 		} else { applet.line(applet.width - 20, 65, applet.width - 5, 75); }
 
 		//Add new components
-		applet.image(this.images.get("Switch"),    4 + 32 * 0, applet.height - 32);
-		applet.image(this.images.get("AndGate"),   4 + 32 * 1, applet.height - 32);
-		applet.image(this.images.get("OrGate"),    4 + 32 * 2, applet.height - 32);
-		applet.image(this.images.get("XorGate"),   4 + 32 * 3, applet.height - 32);
-		applet.image(this.images.get("NotGate"),   4 + 32 * 4, applet.height - 32);
-		applet.image(this.images.get("Joint"),     4 + 32 * 5, applet.height - 32);
-		applet.image(this.images.get("HighSource"),4 + 32 * 6, applet.height - 32);
-		applet.image(this.images.get("LowSource"), 4 + 32 * 7, applet.height - 32);
+		int index = 0;
+		for (String name: hud.buttons) {
+			applet.image(hud.images.get(name), 4 + 32 * index, applet.height - 32);
+			index++;
+		}
 		
 		if (Global.debug) {
 			this.drawDebug(applet);
@@ -216,29 +205,12 @@ public class hud {
 		}
 		
 		//Add new components
-		if (HelperFunctions.isInsideRect(applet.mouseX, applet.mouseY, 4, applet.height - 32, 32, 32)) {
-			game.selectedComponent = "Switch";
-		}
-		if (HelperFunctions.isInsideRect(applet.mouseX, applet.mouseY, 4 + 32 * 1, applet.height - 32, 32, 32)) {
-			game.selectedComponent = "AndGate";
-		}
-		if (HelperFunctions.isInsideRect(applet.mouseX, applet.mouseY, 4 + 32 * 2, applet.height - 32, 32, 32)) {
-			game.selectedComponent = "OrGate";
-		}
-		if (HelperFunctions.isInsideRect(applet.mouseX, applet.mouseY, 4 + 32 * 3, applet.height - 32, 32, 32)) {
-			game.selectedComponent = "XorGate";
-		}
-		if (HelperFunctions.isInsideRect(applet.mouseX, applet.mouseY, 4 + 32 * 4, applet.height - 32, 32, 32)) {
-			game.selectedComponent = "NotGate";
-		}
-		if (HelperFunctions.isInsideRect(applet.mouseX, applet.mouseY, 4 + 32 * 5, applet.height - 32, 32, 32)) {
-			game.selectedComponent = "Joint";
-		}
-		if (HelperFunctions.isInsideRect(applet.mouseX, applet.mouseY, 4 + 32 * 6, applet.height - 32, 32, 32)) {
-			game.selectedComponent = "HighSource";
-		}
-		if (HelperFunctions.isInsideRect(applet.mouseX, applet.mouseY, 4 + 32 * 7, applet.height - 32, 32, 32)) {
-			game.selectedComponent = "LowSource";
+		int index = 0;
+		for (String name: hud.buttons) {
+			if (HelperFunctions.isInsideRect(applet.mouseX, applet.mouseY, 4 + 32 * index, applet.height - 32, 32, 32)) {
+				game.selectedComponent = name;
+			}
+			index++;
 		}
 	}
 
@@ -247,5 +219,10 @@ public class hud {
 		if (pos.x >= winSize.x - 30 && pos.y <= 80) { return true; } //top right menu
 		if (pos.x < 4 + 32 * NUM_COMPONENTS && pos.x >= 0 && pos.y >= winSize.y - 32 && pos.y <= winSize.y) { return true; } //bottom left menu
 		return false;
+	}
+
+	public static void addNewComponentButton(String name) {
+		hud.buttons.add(name);
+		hud.NUM_COMPONENTS++;
 	}
 }

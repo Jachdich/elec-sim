@@ -30,12 +30,14 @@ def get_subdirs(a_dir):
 line_count = 0
 whitespace = 0
 comment    = 0
+total = ""
 for i in get_subdirs("."):
     print(i)
     if i == "./src/com/cospox/elecsim/ComponentTemplate.java":
         continue
     with open(i, "r") as f:
         for line in f.read().split("\n"):
+            total += line + "\n"
             if len(line.strip("\t ")) > 0 and not line.strip("\t ").startswith("//"):
                 line_count += 1
             elif line.strip("\t ").startswith("//"):
@@ -48,3 +50,6 @@ for i in get_subdirs("."):
 print(line_count)
 print(whitespace)
 print(comment)
+
+with open("total.txt", "w") as f:
+    f.write(total)

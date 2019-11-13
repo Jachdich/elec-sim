@@ -1,6 +1,7 @@
 package com.cospox.elecsim.components;
 
 import com.cospox.elecsim.Connection;
+import com.cospox.elecsim.hud;
 import com.cospox.elecsim.util.HelperFunctions;
 import com.cospox.elecsim.util.Vector;
 
@@ -10,7 +11,6 @@ import processing.core.PConstants;
 public class AndGate extends Component {
 	public AndGate(Vector pos, int posInArray) {
 		super(pos, posInArray);
-		this.TYPE = "AndGate";
 		this.connections = new Connection[3];
 		
 		float x = HelperFunctions.snap(this.pos.x);
@@ -22,6 +22,12 @@ public class AndGate extends Component {
 											 new Vector(posInArray, 1)); //input B
 		this.connections[2] = new Connection(new Vector(x + 15 - Connection.WIDTH / 2, y + 30),
 											 new Vector(posInArray, 2)); //output
+	}
+	
+	//run when the application loads
+	public static void onLoad() {
+		hud.addImage("AndGate");
+		hud.addNewComponentButton("AndGate");
 	}
 	
 	@Override

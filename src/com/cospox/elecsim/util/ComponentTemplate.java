@@ -8,7 +8,6 @@ import processing.core.PApplet;
 public class ComponentTemplate extends Component {
 	public ComponentTemplate(Vector pos, int posInArray) {
 		super(pos, posInArray);
-		this.TYPE = "ComponentTemplate";
 		this.connections = new Connection[1];
 		this.connections[0] = new Connection(new Vector(this.pos.x, this.pos.y - Connection.HEIGHT),
 											 new Vector(posInArray, 0)); //input A

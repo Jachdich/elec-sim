@@ -1,6 +1,7 @@
 package com.cospox.elecsim.components;
 
 import com.cospox.elecsim.Connection;
+import com.cospox.elecsim.hud;
 import com.cospox.elecsim.util.HelperFunctions;
 import com.cospox.elecsim.util.Vector;
 
@@ -10,7 +11,6 @@ import processing.core.PConstants;
 public class XorGate extends Component {
 	public XorGate(Vector pos, int posInArray) {
 		super(pos, posInArray);
-		this.TYPE = "XorGate";
 		this.connections = new Connection[3];
 		float x = HelperFunctions.snap(this.pos.x);
 		float y = HelperFunctions.snap(this.pos.y);
@@ -20,6 +20,11 @@ public class XorGate extends Component {
 											 new Vector(posInArray, 1)); //input B
 		this.connections[2] = new Connection(new Vector(x + 15 - Connection.WIDTH / 2, y + 30),
 											 new Vector(posInArray, 2)); //output
+	}
+	
+	public static void onLoad() {
+		hud.addImage("XorGate");
+		hud.addNewComponentButton("XorGate");
 	}
 	
 	@Override

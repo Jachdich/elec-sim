@@ -15,7 +15,6 @@ public class IC extends Component {
 	
 	public IC(Vector pos, int numPins, int posInArray) {
 		super(pos, posInArray);
-		this.TYPE = "IC";
 		this.numPins = numPins;
 		
 		if (this.numPins % 2 != 0) {
@@ -76,4 +75,6 @@ public class IC extends Component {
 		y = translate.y + y * zoom;
 		return HelperFunctions.isInsideRect(pos.x, pos.y, x, y, (this.numPins - 1) * PIN_SPACING * zoom, HEIGHT * zoom);
 	}
+	
+	public static void onLoad() {}
 }

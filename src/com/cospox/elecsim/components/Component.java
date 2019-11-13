@@ -12,7 +12,6 @@ public class Component {
 	public Vector pos;
 	public boolean selected = false;
 	public Connection[] connections;
-	public String TYPE;
 	public int posInArray;
 	
 	public HashMap<String, Object> externalFlags = new HashMap<String, Object>();
@@ -79,5 +78,8 @@ public class Component {
 	}
 
 	public void updateConnectionsPos() {
+	}
+
+	public static void onLoad() {
 	}
 }

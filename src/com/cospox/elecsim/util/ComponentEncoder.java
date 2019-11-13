@@ -32,7 +32,7 @@ public class ComponentEncoder {
 	
 	public static String componentToString(Component c) {
 		String out = "";
-		out += c.TYPE + "(";
+		out += c.getClass().getSimpleName() + "(";
 		out += c.pos.toString();
 		out += ");";
 		return out;

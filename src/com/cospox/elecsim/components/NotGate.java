@@ -1,6 +1,7 @@
 package com.cospox.elecsim.components;
 
 import com.cospox.elecsim.Connection;
+import com.cospox.elecsim.hud;
 import com.cospox.elecsim.util.HelperFunctions;
 import com.cospox.elecsim.util.Vector;
 
@@ -9,7 +10,6 @@ import processing.core.PApplet;
 public class NotGate extends Component {
 	public NotGate(Vector pos, int posInArray) {
 		super(pos, posInArray);
-		this.TYPE = "NotGate";
 		this.connections = new Connection[2];
 		float x = HelperFunctions.snap(this.pos.x);
 		float y = HelperFunctions.snap(this.pos.y);
@@ -76,5 +76,10 @@ public class NotGate extends Component {
 		c.connections = this.connections;
 		c.selected = this.selected;
 		return c;
+	}
+	
+	public static void onLoad() {
+		hud.addImage("NotGate");
+		hud.addNewComponentButton("NotGate");
 	}
 }

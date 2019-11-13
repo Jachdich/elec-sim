@@ -1,6 +1,7 @@
 package com.cospox.elecsim.components;
 
 import com.cospox.elecsim.Connection;
+import com.cospox.elecsim.hud;
 import com.cospox.elecsim.util.HelperFunctions;
 import com.cospox.elecsim.util.Vector;
 
@@ -9,7 +10,6 @@ import processing.core.PApplet;
 public class LowSource extends Component {
 	public LowSource(Vector pos, int posInArray) {
 		super(pos, posInArray);
-		this.TYPE = "LowSource";
 		this.connections = new Connection[1];
 		float x = HelperFunctions.snap(this.pos.x);
 		float y = HelperFunctions.snap(this.pos.y);
@@ -63,5 +63,10 @@ public class LowSource extends Component {
 		c.connections = this.connections; //TODO cannot copy connections (because wires) but they don't move with component
 		c.selected = this.selected;
 		return c;
+	}
+	
+	public static void onLoad() {
+		hud.addImage("LowSource");
+		hud.addNewComponentButton("LowSource");
 	}
 }

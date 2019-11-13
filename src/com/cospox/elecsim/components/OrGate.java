@@ -1,6 +1,7 @@
 package com.cospox.elecsim.components;
 
 import com.cospox.elecsim.Connection;
+import com.cospox.elecsim.hud;
 import com.cospox.elecsim.util.HelperFunctions;
 import com.cospox.elecsim.util.Vector;
 
@@ -10,7 +11,6 @@ import processing.core.PConstants;
 public class OrGate extends Component {
 	public OrGate(Vector pos, int posInArray) {
 		super(pos, posInArray);
-		this.TYPE = "OrGate";
 		this.connections = new Connection[3];
 		float x = HelperFunctions.snap(this.pos.x);
 		float y = HelperFunctions.snap(this.pos.y);
@@ -83,5 +83,10 @@ public class OrGate extends Component {
 		c.connections = this.connections;
 		c.selected = this.selected;
 		return c;
+	}
+	
+	public static void onLoad() {
+		hud.addImage("OrGate");
+		hud.addNewComponentButton("OrGate");
 	}
 }

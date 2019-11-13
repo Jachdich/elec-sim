@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.cospox.elecsim.components.Component;
+import com.cospox.elecsim.util.OnLoadManager;
 import com.cospox.elecsim.util.ComponentEncoder;
 import com.cospox.elecsim.util.ComponentGenerator;
 import com.cospox.elecsim.util.FileHandler;
@@ -144,6 +145,16 @@ public class Game {
 		if (filename != "" && filename != "\n" && filename != " ") {
 			//this.loadFromFile(filename);
 			//this.loadedFileName = filename;
+		}
+		this.doOnLoad();
+	}
+	
+	private void doOnLoad() {
+		try {
+			OnLoadManager.doOnLoad();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
@@ -450,7 +461,7 @@ public class Game {
 				Component c = (Component)o;
 				
 				//add new component at +20x +20y from the original
-				String name = c.TYPE;
+				String name = c.getClass().getSimpleName();
 				Vector pos = new Vector(c.pos.x + 20, c.pos.y + 20);
 				this.addNewComponent(name, pos);
 				this.selectedComponents.add(this.components.get(this.components.size() - 1));

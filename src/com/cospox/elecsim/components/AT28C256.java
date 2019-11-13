@@ -12,7 +12,6 @@ public class AT28C256 extends IC {
 	
 	private boolean previousWE;
 	private boolean previousCE;
-	private boolean previousOE;
 	
 	public AT28C256(Vector pos, int posInArray) {
 		super(pos, 28, posInArray);
@@ -71,6 +70,10 @@ public class AT28C256 extends IC {
 		
 		this.previousWE = we;
 		this.previousCE = ce;
-		this.previousOE = oe;
+	}
+	
+	public static void onLoad() {
+		//hud.addImage("AT28C256");
+		//hud.addNewComponentButton("AT28C256");
 	}
 }
