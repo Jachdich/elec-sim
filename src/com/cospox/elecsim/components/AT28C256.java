@@ -1,7 +1,7 @@
 package com.cospox.elecsim.components;
 
 import com.cospox.elecsim.Connection;
-import com.cospox.elecsim.hud;
+import com.cospox.elecsim.ui.hud;
 import com.cospox.elecsim.util.Vector;
 
 public class AT28C256 extends IC {
@@ -26,8 +26,6 @@ public class AT28C256 extends IC {
 		boolean ce = this.connections[19].on;
 		
 		boolean[] output = new boolean[this.numPins];
-		
-		//System.out.println(we + " " + ce + ", " + this.previousWE + " " + this.previousCE);
 		
 		if (((we && ce && !this.previousWE) || (we && ce && !this.previousCE)) && !oe) {
 			//rising edge of either WE or CE, with the other one high

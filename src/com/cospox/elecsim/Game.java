@@ -24,6 +24,8 @@
  *Minor visual bug where sometimes the wrong/no connections outlined in red NEEDS VERIFICATION --sorta-verified
  *Some UI elements don't respond to font size changes #21
  *
+ *Magnify icons when hovering in component selection menu
+ *
  *these issues need verification to show if they have been fixed
  *
  *Sometimes wires don't get copied - AFTER CTRL-Z -MAYBE FIXED
@@ -51,6 +53,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.cospox.elecsim.components.Component;
+import com.cospox.elecsim.ui.hud;
 import com.cospox.elecsim.util.OnLoadManager;
 import com.cospox.elecsim.util.ComponentEncoder;
 import com.cospox.elecsim.util.ComponentGenerator;
@@ -775,7 +778,7 @@ public class Game {
 	private void update() {
 		//update logic on all components
 		for (Component c: this.components) { c.update(); }
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < 5; i++) { //TODO WHY SO MANY TIMES???
 			for (Wire w: this.wires) { w.update(); }
 		}
 	}

@@ -1,8 +1,9 @@
-package com.cospox.elecsim;
+package com.cospox.elecsim.ui;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import com.cospox.elecsim.Game;
 import com.cospox.elecsim.util.Global;
 import com.cospox.elecsim.util.HelperFunctions;
 import com.cospox.elecsim.util.Vector;
@@ -22,6 +23,7 @@ public class hud {
 	private final static int PADDING_FACTOR = 4;
 	
 	private static ArrayList<String> buttons = new ArrayList<String>();
+	private static HashMap<String, HUDCategory> categories = new HashMap<String, HUDCategory>();
 	
 	public hud(PApplet applet) {
 		hud.parent = applet;
@@ -220,9 +222,24 @@ public class hud {
 		if (pos.x < 4 + 32 * NUM_COMPONENTS && pos.x >= 0 && pos.y >= winSize.y - 32 && pos.y <= winSize.y) { return true; } //bottom left menu
 		return false;
 	}
+	
+	public static void addNewComponentCategory() {
+		hud.NUM_COMPONENTS++;
+	}
 
+	public static void addNewComponentButton(String name, String categoryName) {
+		if (categoryName != null) {
+			hud.categories.get(categoryName).addButton(new HUDButton(name, hud.images.get(name)));
+		} else {
+			hud.buttons.add(new HUDButton(name, hud.images.get(name)));
+			hud.NUM_COMPONENTS++;
+		}
+	}
+	
 	public static void addNewComponentButton(String name) {
 		hud.buttons.add(name);
 		hud.NUM_COMPONENTS++;
 	}
+	
+	
 }
