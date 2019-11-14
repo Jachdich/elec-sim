@@ -741,7 +741,7 @@ public class Game {
 		if (this.keys.ctrl() && !this.keys.shift() && this.keys.get(78)) { this.newFile(); }				//ctrl+n = new
 		
 		if (this.keys.get('b')) { this.breakFunc(); } //break on demand
-		if (this.keys.get('r')) { this.addNewComponent("AT28C256", new Vector()); }
+		//if (this.keys.get('r')) { this.addNewComponent("AT28C256", new Vector()); }
 		
 		if (this.keys.get('y') && !this.keys.shift() && !this.keys.ctrl()) {								//y = switch wire mode
 			this.states.put("wireMode", !this.states.get("wireMode"));
@@ -781,6 +781,10 @@ public class Game {
 	}
 	
 	private void breakFunc() {
+		//In case anyone's wondering,
+		//this is a do-nothing function so that I can set a breakpoint inside
+		//and bind a ket to run the function, effectively having a 'break' key
+		//which is useful for debugging a GUI program.
 		int xasd = 0;
 		xasd += 1;
 		System.out.println(xasd);

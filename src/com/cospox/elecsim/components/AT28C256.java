@@ -1,6 +1,7 @@
 package com.cospox.elecsim.components;
 
 import com.cospox.elecsim.Connection;
+import com.cospox.elecsim.hud;
 import com.cospox.elecsim.util.Vector;
 
 public class AT28C256 extends IC {
@@ -73,7 +74,7 @@ public class AT28C256 extends IC {
 	}
 	
 	public static void onLoad() {
-		//hud.addImage("AT28C256");
-		//hud.addNewComponentButton("AT28C256");
+		hud.addImage("AT28C256");
+		hud.addNewComponentButton("AT28C256");
 	}
 }
