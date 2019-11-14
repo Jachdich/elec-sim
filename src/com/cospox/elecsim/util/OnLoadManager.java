@@ -2,13 +2,18 @@ package com.cospox.elecsim.util;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.cospox.elecsim.components.Component;
@@ -27,6 +32,7 @@ public final class OnLoadManager {
 
     private static List<Class<?>> getClasses(Class<?> caller)
             throws IOException, URISyntaxException {
+
         return Files.walk(getPackagePath(caller))
                 .filter(Files::isRegularFile)
                 .filter(file -> file.toString().endsWith(".class"))
@@ -35,7 +41,7 @@ public final class OnLoadManager {
     }
 
     private static Class<?> mapPathToClass(Path clsPath, String packageName) {
-        String className = clsPath.toFile().getName();
+        String className = clsPath.getFileName().toString();
         className = className.substring(0, className.length() - 6);
         return loadClass(packageName + "." + className);
     }
@@ -45,7 +51,19 @@ public final class OnLoadManager {
         String packageName = createPackageName(caller);
         Enumeration<URL> resources = caller.getClassLoader()
                 .getResources(packageName);
-        return Paths.get(resources.nextElement().toURI());
+        
+        URL element = resources.nextElement();
+        
+        if (element.toURI().toString().startsWith("file:")) {
+        	return Paths.get(element.toURI());
+        }
+        
+        final Map<String, String> env = new HashMap<>();
+        final String[] array = element.toURI().toString().split("!");
+        final FileSystem fs = FileSystems.newFileSystem(URI.create(array[0]), env);
+        final Path path = fs.getPath(array[1]);
+
+		return path;
     }
 
     private static String createPackageName(Class<?> caller) {
