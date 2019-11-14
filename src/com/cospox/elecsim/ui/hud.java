@@ -231,7 +231,7 @@ public class hud {
 		if (categoryName != null) {
 			hud.categories.get(categoryName).addButton(new HUDButton(name, hud.images.get(name)));
 		} else {
-			hud.buttons.add(new HUDButton(name, hud.images.get(name)));
+			//hud.buttons.add(new HUDButton(name, hud.images.get(name)));
 			hud.NUM_COMPONENTS++;
 		}
 	}
