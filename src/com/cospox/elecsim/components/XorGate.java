@@ -24,7 +24,7 @@ public class XorGate extends Component {
 	
 	public static void onLoad() {
 		hud.addImage("XorGate");
-		hud.addNewComponentButton("XorGate");
+		hud.addNewComponentButton("XorGate", "BasicGates");
 	}
 	
 	@Override

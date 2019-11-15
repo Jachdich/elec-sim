@@ -73,6 +73,6 @@ public class AT28C256 extends IC {
 	
 	public static void onLoad() {
 		hud.addImage("AT28C256");
-		hud.addNewComponentButton("AT28C256");
+		hud.addNewComponentButton("AT28C256", "ICs");
 	}
 }

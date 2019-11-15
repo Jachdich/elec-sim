@@ -80,6 +80,6 @@ public class NotGate extends Component {
 	
 	public static void onLoad() {
 		hud.addImage("NotGate");
-		hud.addNewComponentButton("NotGate");
+		hud.addNewComponentButton("NotGate", "BasicGates");
 	}
 }

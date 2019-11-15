@@ -67,6 +67,6 @@ public class LowSource extends Component {
 	
 	public static void onLoad() {
 		hud.addImage("LowSource");
-		hud.addNewComponentButton("LowSource");
+		hud.addNewComponentButton("LowSource", "IO");
 	}
 }

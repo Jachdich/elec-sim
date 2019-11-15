@@ -22,11 +22,25 @@ public final class OnLoadManager {
 
     public static void doOnLoad() throws Exception {
         for (Class<?> cls : getClasses(Component.class)) {
-            if (cls != Component.class) {
-                Method onLoad = cls.getDeclaredMethod("onLoad");
-                onLoad.setAccessible(true);
-                onLoad.invoke(null);
-            }
+        	try {
+            	Method onLoad = cls.getDeclaredMethod("onLoad");
+            	onLoad.setAccessible(true);
+            	onLoad.invoke(null);
+        	} catch (NoSuchMethodException e) {
+        		System.out.println("[WARNING] Class <" + cls.getName() + "> has no <onLoad> method");
+        	}
+        }
+    }
+
+    public static void doOnLoadPriority() throws Exception {
+        for (Class<?> cls : getClasses(Component.class)) {
+        	try {
+            	Method onLoad = cls.getDeclaredMethod("onLoadPriority");
+            	onLoad.setAccessible(true);
+            	onLoad.invoke(null);
+        	} catch (NoSuchMethodException e) {
+        		System.out.println("[WARNING] Class <" + cls.getName() + "> has no <onLoadPriority> method");
+        	}
         }
     }
 

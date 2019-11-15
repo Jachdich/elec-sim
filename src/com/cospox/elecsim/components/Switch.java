@@ -82,6 +82,6 @@ public class Switch extends Component {
 	
 	public static void onLoad() {
 		hud.addImage("Switch");
-		hud.addNewComponentButton("Switch");
+		hud.addNewComponentButton("Switch", "IO");
 	}
 }

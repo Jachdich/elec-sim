@@ -154,6 +154,7 @@ public class Game {
 	
 	private void doOnLoad() {
 		try {
+			OnLoadManager.doOnLoadPriority();
 			OnLoadManager.doOnLoad();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

@@ -87,6 +87,6 @@ public class OrGate extends Component {
 	
 	public static void onLoad() {
 		hud.addImage("OrGate");
-		hud.addNewComponentButton("OrGate");
+		hud.addNewComponentButton("OrGate", "BasicGates");
 	}
 }

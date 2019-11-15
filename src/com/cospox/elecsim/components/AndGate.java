@@ -27,7 +27,7 @@ public class AndGate extends Component {
 	//run when the application loads
 	public static void onLoad() {
 		hud.addImage("AndGate");
-		hud.addNewComponentButton("AndGate");
+		hud.addNewComponentButton("AndGate", "BasicGates");
 	}
 	
 	@Override

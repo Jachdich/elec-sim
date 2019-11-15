@@ -3,6 +3,8 @@ package com.cospox.elecsim.components;
 import java.util.HashMap;
 
 import com.cospox.elecsim.Connection;
+import com.cospox.elecsim.ui.HUDCategory;
+import com.cospox.elecsim.ui.hud;
 import com.cospox.elecsim.util.HelperFunctions;
 import com.cospox.elecsim.util.Vector;
 
@@ -80,6 +82,11 @@ public class Component {
 	public void updateConnectionsPos() {
 	}
 
-	public static void onLoad() {
+	public static void onLoadPriority() {
+		hud.addImage("BasicGates");
+		hud.addImage("IO");
+		hud.addNewComponentCategory("BasicGates", "BasicGates");
+		hud.addNewComponentCategory("IO", "IO");
 	}
+
 }

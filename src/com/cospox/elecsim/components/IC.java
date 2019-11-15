@@ -1,6 +1,7 @@
 package com.cospox.elecsim.components;
 
 import com.cospox.elecsim.Connection;
+import com.cospox.elecsim.ui.hud;
 import com.cospox.elecsim.util.HelperFunctions;
 import com.cospox.elecsim.util.Vector;
 
@@ -76,5 +77,8 @@ public class IC extends Component {
 		return HelperFunctions.isInsideRect(pos.x, pos.y, x, y, (this.numPins - 1) * PIN_SPACING * zoom, HEIGHT * zoom);
 	}
 	
-	public static void onLoad() {}
+	public static void onLoadPriority() {
+		hud.addImage("ICs");
+		hud.addNewComponentCategory("ICs", "ICs");
+	}
 }

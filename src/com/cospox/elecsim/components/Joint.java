@@ -69,6 +69,6 @@ public class Joint extends Component {
 	
 	public static void onLoad() {
 		hud.addImage("Joint");
-		hud.addNewComponentButton("Joint");
+		hud.addNewComponentButton("Joint", "IO");
 	}
 }

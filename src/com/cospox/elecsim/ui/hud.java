@@ -13,7 +13,7 @@ import processing.core.PImage;
 
 public class hud {
 	private static HashMap<String, PImage> images = new HashMap<String, PImage>();
-	private static int NUM_COMPONENTS = 0;
+	protected static int NUM_COMPONENTS = 0;
 	private Vector mouseStart = new Vector();
 	public boolean canSelect = false;
 	private boolean[] buttonsPressed = new boolean[10];
@@ -58,6 +58,9 @@ public class hud {
 		}
 		
 		this.drawButtons(applet, game);
+		for (HUDCategory c: hud.categories.values()) {
+			c.draw(applet);
+		}
 		
 		applet.fill(0);
 		applet.text("Tool (t)", applet.width - 46, 5);
@@ -88,6 +91,10 @@ public class hud {
 		
 		if (Global.debug) {
 			this.drawDebug(applet);
+		}
+		
+		for (HUDCategory c: hud.categories.values()) {
+			c.draw(applet);
 		}
 	}
 	
@@ -199,6 +206,10 @@ public class hud {
 	}
 
 	public void mouseClicked(PApplet applet, Game game) {
+		for (HUDCategory h: hud.categories.values()) {
+			h.mouseClicked(new Vector(applet.mouseX, applet.mouseY), new Vector(applet.width, applet.height), game);
+		}
+		
 		if (applet.mouseX >= applet.width - 20 && applet.mouseY <= 40 && applet.mouseY >= 20) {
 			game.switchSelectedTool();
 		}
@@ -223,7 +234,8 @@ public class hud {
 		return false;
 	}
 	
-	public static void addNewComponentCategory() {
+	public static void addNewComponentCategory(String name, String iconName) {
+		hud.categories.put(name, new HUDCategory(name, hud.images.get(iconName), 4 + 32 * NUM_COMPONENTS));
 		hud.NUM_COMPONENTS++;
 	}
 
