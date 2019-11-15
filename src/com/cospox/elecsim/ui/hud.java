@@ -235,7 +235,7 @@ public class hud {
 	}
 	
 	public static void addNewComponentCategory(String name, String iconName) {
-		hud.categories.put(name, new HUDCategory(name, hud.images.get(iconName), 4 + 32 * NUM_COMPONENTS));
+		hud.categories.put(name, new HUDCategory(hud.images.get(iconName), 4 + 32 * NUM_COMPONENTS));
 		hud.NUM_COMPONENTS++;
 	}
 
