@@ -1,7 +1,7 @@
 package com.cospox.elecsim.components;
 
 import com.cospox.elecsim.Connection;
-import com.cospox.elecsim.hud;
+import com.cospox.elecsim.ui.hud;
 import com.cospox.elecsim.util.HelperFunctions;
 import com.cospox.elecsim.util.Vector;
 
@@ -27,7 +27,7 @@ public class AndGate extends Component {
 	//run when the application loads
 	public static void onLoad() {
 		hud.addImage("AndGate");
-		hud.addNewComponentButton("AndGate");
+		hud.addNewComponentButton("AndGate", "BasicGates");
 	}
 	
 	@Override
@@ -85,7 +85,7 @@ public class AndGate extends Component {
 package com.cospox.elecsim.components;
 
 import com.cospox.elecsim.Connection;
-import com.cospox.elecsim.hud;
+import com.cospox.elecsim.ui.hud;
 import com.cospox.elecsim.util.Vector;
 
 public class AT28C256 extends IC {
@@ -110,8 +110,6 @@ public class AT28C256 extends IC {
 		boolean ce = this.connections[19].on;
 		
 		boolean[] output = new boolean[this.numPins];
-		
-		//System.out.println(we + " " + ce + ", " + this.previousWE + " " + this.previousCE);
 		
 		if (((we && ce && !this.previousWE) || (we && ce && !this.previousCE)) && !oe) {
 			//rising edge of either WE or CE, with the other one high
@@ -159,7 +157,7 @@ public class AT28C256 extends IC {
 	
 	public static void onLoad() {
 		hud.addImage("AT28C256");
-		hud.addNewComponentButton("AT28C256");
+		hud.addNewComponentButton("AT28C256", "ICs");
 	}
 }
 
@@ -168,6 +166,7 @@ package com.cospox.elecsim.components;
 import java.util.HashMap;
 
 import com.cospox.elecsim.Connection;
+import com.cospox.elecsim.ui.hud;
 import com.cospox.elecsim.util.HelperFunctions;
 import com.cospox.elecsim.util.Vector;
 
@@ -245,14 +244,19 @@ public class Component {
 	public void updateConnectionsPos() {
 	}
 
-	public static void onLoad() {
+	public static void onLoadPriority() {
+		hud.addImage("BasicGates");
+		hud.addImage("IO");
+		hud.addNewComponentCategory("BasicGates", "BasicGates");
+		hud.addNewComponentCategory("IO", "IO");
 	}
+
 }
 
 package com.cospox.elecsim.components;
 
 import com.cospox.elecsim.Connection;
-import com.cospox.elecsim.hud;
+import com.cospox.elecsim.ui.hud;
 import com.cospox.elecsim.util.HelperFunctions;
 import com.cospox.elecsim.util.Vector;
 
@@ -320,13 +324,14 @@ public class HighSource extends Component {
 	
 	public static void onLoad() {
 		hud.addImage("HighSource");
-		hud.addNewComponentButton("HighSource");
+		hud.addNewComponentButton("HighSource", "IO");
 	}
 }
 
 package com.cospox.elecsim.components;
 
 import com.cospox.elecsim.Connection;
+import com.cospox.elecsim.ui.hud;
 import com.cospox.elecsim.util.HelperFunctions;
 import com.cospox.elecsim.util.Vector;
 
@@ -402,13 +407,16 @@ public class IC extends Component {
 		return HelperFunctions.isInsideRect(pos.x, pos.y, x, y, (this.numPins - 1) * PIN_SPACING * zoom, HEIGHT * zoom);
 	}
 	
-	public static void onLoad() {}
+	public static void onLoadPriority() {
+		hud.addImage("ICs");
+		hud.addNewComponentCategory("ICs", "ICs");
+	}
 }
 
 package com.cospox.elecsim.components;
 
 import com.cospox.elecsim.Connection;
-import com.cospox.elecsim.hud;
+import com.cospox.elecsim.ui.hud;
 import com.cospox.elecsim.util.HelperFunctions;
 import com.cospox.elecsim.util.Vector;
 
@@ -476,14 +484,14 @@ public class Joint extends Component {
 	
 	public static void onLoad() {
 		hud.addImage("Joint");
-		hud.addNewComponentButton("Joint");
+		hud.addNewComponentButton("Joint", "IO");
 	}
 }
 
 package com.cospox.elecsim.components;
 
 import com.cospox.elecsim.Connection;
-import com.cospox.elecsim.hud;
+import com.cospox.elecsim.ui.hud;
 import com.cospox.elecsim.util.HelperFunctions;
 import com.cospox.elecsim.util.Vector;
 
@@ -549,14 +557,14 @@ public class LowSource extends Component {
 	
 	public static void onLoad() {
 		hud.addImage("LowSource");
-		hud.addNewComponentButton("LowSource");
+		hud.addNewComponentButton("LowSource", "IO");
 	}
 }
 
 package com.cospox.elecsim.components;
 
 import com.cospox.elecsim.Connection;
-import com.cospox.elecsim.hud;
+import com.cospox.elecsim.ui.hud;
 import com.cospox.elecsim.util.HelperFunctions;
 import com.cospox.elecsim.util.Vector;
 
@@ -635,14 +643,14 @@ public class NotGate extends Component {
 	
 	public static void onLoad() {
 		hud.addImage("NotGate");
-		hud.addNewComponentButton("NotGate");
+		hud.addNewComponentButton("NotGate", "BasicGates");
 	}
 }
 
 package com.cospox.elecsim.components;
 
 import com.cospox.elecsim.Connection;
-import com.cospox.elecsim.hud;
+import com.cospox.elecsim.ui.hud;
 import com.cospox.elecsim.util.HelperFunctions;
 import com.cospox.elecsim.util.Vector;
 
@@ -728,13 +736,13 @@ public class OrGate extends Component {
 	
 	public static void onLoad() {
 		hud.addImage("OrGate");
-		hud.addNewComponentButton("OrGate");
+		hud.addNewComponentButton("OrGate", "BasicGates");
 	}
 }
 package com.cospox.elecsim.components;
 
 import com.cospox.elecsim.Connection;
-import com.cospox.elecsim.hud;
+import com.cospox.elecsim.ui.hud;
 import com.cospox.elecsim.util.HelperFunctions;
 import com.cospox.elecsim.util.Vector;
 
@@ -815,14 +823,14 @@ public class Switch extends Component {
 	
 	public static void onLoad() {
 		hud.addImage("Switch");
-		hud.addNewComponentButton("Switch");
+		hud.addNewComponentButton("Switch", "IO");
 	}
 }
 
 package com.cospox.elecsim.components;
 
 import com.cospox.elecsim.Connection;
-import com.cospox.elecsim.hud;
+import com.cospox.elecsim.ui.hud;
 import com.cospox.elecsim.util.HelperFunctions;
 import com.cospox.elecsim.util.Vector;
 
@@ -845,7 +853,7 @@ public class XorGate extends Component {
 	
 	public static void onLoad() {
 		hud.addImage("XorGate");
-		hud.addNewComponentButton("XorGate");
+		hud.addNewComponentButton("XorGate", "BasicGates");
 	}
 	
 	@Override
@@ -973,6 +981,8 @@ public class Connection {
  *When dragging multiple components in snap to grid mode, its not smooth at all
  *snap to grid mode setting
  *
+ *WE NEED A FUDGING SETTINGS MENU - Possibly consider second window, or even seperate library to make it look profesh.
+ *
  *Add 'changes were made do u want to save pwese' on file open #16
  *Fix the damn and gate red outline! #18
  *failsafe for opening multiple save dialogs or similar 
@@ -980,6 +990,9 @@ public class Connection {
  *In wire mode false, wire click detection is slightly off #19
  *Minor visual bug where sometimes the wrong/no connections outlined in red NEEDS VERIFICATION --sorta-verified
  *Some UI elements don't respond to font size changes #21
+ *
+ *Magnify icons when hovering in component selection menu
+ *When hovering over components show tooltip - make a custom "onHover" event, where if there have been say 60 frames and the mouse hasn't moved it resets a timer and calls a function inside hud.
  *
  *these issues need verification to show if they have been fixed
  *
@@ -1008,6 +1021,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.cospox.elecsim.components.Component;
+import com.cospox.elecsim.ui.hud;
 import com.cospox.elecsim.util.OnLoadManager;
 import com.cospox.elecsim.util.ComponentEncoder;
 import com.cospox.elecsim.util.ComponentGenerator;
@@ -1108,6 +1122,7 @@ public class Game {
 	
 	private void doOnLoad() {
 		try {
+			OnLoadManager.doOnLoadPriority();
 			OnLoadManager.doOnLoad();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -1732,7 +1747,7 @@ public class Game {
 	private void update() {
 		//update logic on all components
 		for (Component c: this.components) { c.update(); }
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < 5; i++) { //TODO WHY SO MANY TIMES???
 			for (Wire w: this.wires) { w.update(); }
 		}
 	}
@@ -1750,9 +1765,96 @@ public class Game {
 
 package com.cospox.elecsim;
 
+import com.cospox.elecsim.util.Global;
+import com.cospox.elecsim.util.HelperFunctions;
+
+import processing.core.PApplet;
+import processing.event.MouseEvent;
+
+public class Main extends PApplet{
+	public Game game;
+	public static void main(String[] args) {
+		PApplet.main("com.cospox.elecsim.Main");
+	}
+
+	@Override
+	public void settings() {
+		//int offset = 50;
+		//int h = 720 - offset;
+		this.size(480, 640, P2D);
+	}
+
+	@Override
+	public void setup() {
+		this.frameRate(60);
+		surface.setResizable(true);
+		this.game = new Game(this);
+	}
+
+	@Override
+	public void draw() {
+		this.game.draw(this);
+		if (Global.debug) {
+			
+			this.fill(255, 0, 0);
+			this.text(this.frameRate, 2, 38);
+			Runtime rt = Runtime.getRuntime();
+			double usedMiB = HelperFunctions.round((rt.totalMemory() - rt.freeMemory()) / 1024.0 / 1024.0, 3);
+			double totalMiB = HelperFunctions.round(rt.totalMemory() / 1024.0 / 1024.0, 3);
+			this.text(Double.toString(usedMiB) + "/" + Double.toString(totalMiB), 2, 50);
+			this.fill(255);
+		}
+	}
+
+	@Override
+	public void mouseClicked() {
+		this.game.mouseClicked(this);
+	}
+
+	@Override
+	public void keyPressed() {
+		//println("'" + key + "' " + keyCode);
+		this.game.keyPressed(this.key, this.keyCode);
+	}
+	@Override
+	public void keyReleased() {
+		this.game.keyReleased(this.key, this.keyCode);
+	}
+
+	@Override
+	public void mouseWheel(MouseEvent event) {
+		this.game.mouseWheel(event, this);
+	}
+
+	@Override
+	public void mouseDragged(MouseEvent event) {
+		this.game.mouseDragged(event, this);
+	}
+	
+	@Override
+	public void mousePressed() {
+		this.game.mousePressed(this);
+	}
+	
+	@Override
+	public void mouseReleased() {
+		this.game.mouseReleased(this);
+	}
+	
+	@Override
+	public void exit() {
+		if (this.game.dispose()) {
+			super.exit();
+		}
+	}
+}
+
+package com.cospox.elecsim.ui;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import com.cospox.elecsim.Game;
 import com.cospox.elecsim.util.Global;
 import com.cospox.elecsim.util.HelperFunctions;
 import com.cospox.elecsim.util.Vector;
@@ -1762,7 +1864,7 @@ import processing.core.PImage;
 
 public class hud {
 	private static HashMap<String, PImage> images = new HashMap<String, PImage>();
-	private static int NUM_COMPONENTS = 0;
+	protected static int NUM_COMPONENTS = 0;
 	private Vector mouseStart = new Vector();
 	public boolean canSelect = false;
 	private boolean[] buttonsPressed = new boolean[10];
@@ -1772,6 +1874,7 @@ public class hud {
 	private final static int PADDING_FACTOR = 4;
 	
 	private static ArrayList<String> buttons = new ArrayList<String>();
+	private static HashMap<String, HUDCategory> categories = new HashMap<String, HUDCategory>();
 	
 	public hud(PApplet applet) {
 		hud.parent = applet;
@@ -1806,6 +1909,9 @@ public class hud {
 		}
 		
 		this.drawButtons(applet, game);
+		for (HUDCategory c: hud.categories.values()) {
+			c.draw(applet);
+		}
 		
 		applet.fill(0);
 		applet.text("Tool (t)", applet.width - 46, 5);
@@ -1836,6 +1942,10 @@ public class hud {
 		
 		if (Global.debug) {
 			this.drawDebug(applet);
+		}
+		
+		for (HUDCategory c: hud.categories.values()) {
+			c.draw(applet);
 		}
 	}
 	
@@ -1947,6 +2057,10 @@ public class hud {
 	}
 
 	public void mouseClicked(PApplet applet, Game game) {
+		for (HUDCategory h: hud.categories.values()) {
+			h.mouseClicked(new Vector(applet.mouseX, applet.mouseY), new Vector(applet.width, applet.height), game);
+		}
+		
 		if (applet.mouseX >= applet.width - 20 && applet.mouseY <= 40 && applet.mouseY >= 20) {
 			game.switchSelectedTool();
 		}
@@ -1970,99 +2084,109 @@ public class hud {
 		if (pos.x < 4 + 32 * NUM_COMPONENTS && pos.x >= 0 && pos.y >= winSize.y - 32 && pos.y <= winSize.y) { return true; } //bottom left menu
 		return false;
 	}
+	
+	public static void addNewComponentCategory(String name, String iconName) {
+		hud.categories.put(name, new HUDCategory(hud.images.get(iconName), 4 + 32 * NUM_COMPONENTS));
+		hud.NUM_COMPONENTS++;
+	}
 
+	public static void addNewComponentButton(String name, String categoryName) {
+		if (categoryName != null) {
+			hud.categories.get(categoryName).addButton(new HUDButton(name, hud.images.get(name)));
+		} else {
+			//hud.buttons.add(new HUDButton(name, hud.images.get(name)));
+			hud.NUM_COMPONENTS++;
+		}
+	}
+	
 	public static void addNewComponentButton(String name) {
 		hud.buttons.add(name);
 		hud.NUM_COMPONENTS++;
 	}
+	
+	
 }
 
-package com.cospox.elecsim;
-
-import com.cospox.elecsim.util.Global;
-import com.cospox.elecsim.util.HelperFunctions;
+package com.cospox.elecsim.ui;
 
 import processing.core.PApplet;
-import processing.event.MouseEvent;
+import processing.core.PImage;
 
-public class Main extends PApplet{
-	public Game game;
-	public static void main(String[] args) {
-		PApplet.main("com.cospox.elecsim.Main");
+public class HUDButton {
+	protected String name;
+	private PImage icon;
+	protected float x;
+	public HUDButton(String name, PImage icon) {
+		this.name = name;
+		this.icon = icon;
+	}
+	
+	public void setPos(float x) {
+		this.x = x;
+	}
+	
+	public void draw(PApplet applet) {
+		applet.image(this.icon, x, applet.height - 64);
 	}
 
-	@Override
-	public void settings() {
-		//int offset = 50;
-		//int h = 720 - offset;
-		this.size(480, 640, P2D);
-	}
+}
 
-	@Override
-	public void setup() {
-		this.frameRate(60);
-		surface.setResizable(true);
-		this.game = new Game(this);
-	}
+package com.cospox.elecsim.ui;
 
-	@Override
-	public void draw() {
-		this.game.draw(this);
-		if (Global.debug) {
-			
-			this.fill(255, 0, 0);
-			this.text(this.frameRate, 2, 38);
-			Runtime rt = Runtime.getRuntime();
-			double usedMiB = HelperFunctions.round((rt.totalMemory() - rt.freeMemory()) / 1024.0 / 1024.0, 3);
-			double totalMiB = HelperFunctions.round(rt.totalMemory() / 1024.0 / 1024.0, 3);
-			this.text(Double.toString(usedMiB) + "/" + Double.toString(totalMiB), 2, 50);
-			this.fill(255);
+import java.util.ArrayList;
+
+import com.cospox.elecsim.Game;
+import com.cospox.elecsim.util.HelperFunctions;
+import com.cospox.elecsim.util.Vector;
+
+import processing.core.PApplet;
+import processing.core.PImage;
+
+public class HUDCategory {
+	private PImage icon;
+	private float x;
+	public boolean shown = false;
+	private int numButtons = 0;
+	private ArrayList<HUDButton> buttons = new ArrayList<HUDButton>();
+	public HUDCategory(PImage icon, float x) {
+		this.icon = icon;
+		this.x = x;
+	}
+	
+	public void draw(PApplet applet) {
+		applet.image(this.icon, this.x, applet.height - 32);
+		if (this.shown) {
+			for (HUDButton b: this.buttons) {
+				b.draw(applet);
+			}
 		}
 	}
-
-	@Override
-	public void mouseClicked() {
-		this.game.mouseClicked(this);
-	}
-
-	@Override
-	public void keyPressed() {
-		//println("'" + key + "' " + keyCode);
-		this.game.keyPressed(this.key, this.keyCode);
-	}
-	@Override
-	public void keyReleased() {
-		this.game.keyReleased(this.key, this.keyCode);
-	}
-
-	@Override
-	public void mouseWheel(MouseEvent event) {
-		this.game.mouseWheel(event, this);
-	}
-
-	@Override
-	public void mouseDragged(MouseEvent event) {
-		this.game.mouseDragged(event, this);
+	
+	public void addButton(HUDButton button) {
+		this.buttons.add(button);
+		button.setPos(4 + 32 * this.numButtons);
+		this.numButtons++;
 	}
 	
-	@Override
-	public void mousePressed() {
-		this.game.mousePressed(this);
-	}
-	
-	@Override
-	public void mouseReleased() {
-		this.game.mouseReleased(this);
-	}
-	
-	@Override
-	public void exit() {
-		if (this.game.dispose()) {
-			super.exit();
+	protected void mouseClicked(Vector pos, Vector screenSize, Game game) {
+		int ROWS = 2;
+		int COLS = hud.NUM_COMPONENTS;
+		if (HelperFunctions.isInsideRect(pos.x, pos.y, this.x, screenSize.y - 32, 32, 32)) {
+			this.shown = !this.shown;
+		} else if (HelperFunctions.isInsideRect(pos.x, pos.y, 0, screenSize.y - 32 * ROWS, COLS, 32 * ROWS)){
+			this.shown = false;
+		}
+		if (!this.shown) { return; }
+		if (pos.y >= screenSize.y - 64 && pos.y <= screenSize.y - 32) {
+			for (HUDButton b: this.buttons) {
+				if (pos.x >= b.x && pos.x <= b.x + 32) {
+					//mouse was over b
+					game.selectedComponent = b.name;
+				}
+			}
 		}
 	}
 }
-
 package com.cospox.elecsim.util;
 
 import java.util.ArrayList;
@@ -2457,11 +2581,25 @@ public final class OnLoadManager {
 
     public static void doOnLoad() throws Exception {
         for (Class<?> cls : getClasses(Component.class)) {
-            if (cls != Component.class) {
-                Method onLoad = cls.getDeclaredMethod("onLoad");
-                onLoad.setAccessible(true);
-                onLoad.invoke(null);
-            }
+        	try {
+            	Method onLoad = cls.getDeclaredMethod("onLoad");
+            	onLoad.setAccessible(true);
+            	onLoad.invoke(null);
+        	} catch (NoSuchMethodException e) {
+        		System.out.println("[WARNING] Class <" + cls.getName() + "> has no <onLoad> method");
+        	}
+        }
+    }
+
+    public static void doOnLoadPriority() throws Exception {
+        for (Class<?> cls : getClasses(Component.class)) {
+        	try {
+            	Method onLoad = cls.getDeclaredMethod("onLoadPriority");
+            	onLoad.setAccessible(true);
+            	onLoad.invoke(null);
+        	} catch (NoSuchMethodException e) {
+        		System.out.println("[WARNING] Class <" + cls.getName() + "> has no <onLoadPriority> method");
+        	}
         }
     }
 

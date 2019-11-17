@@ -84,7 +84,7 @@ public class Component {
 	public static void onLoadPriority() {
 		hud.addImage("BasicGates");
 		hud.addImage("IO");
-		hud.addNewComponentCategory("BasicGates", "BasicGates");
+		hud.addNewComponentCategory("Gates", "BasicGates");
 		hud.addNewComponentCategory("IO", "IO");
 	}
 

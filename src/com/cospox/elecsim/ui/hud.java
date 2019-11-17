@@ -1,11 +1,9 @@
 package com.cospox.elecsim.ui;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.cospox.elecsim.Game;
 import com.cospox.elecsim.util.Global;
-import com.cospox.elecsim.util.HelperFunctions;
 import com.cospox.elecsim.util.Vector;
 
 import processing.core.PApplet;
@@ -17,12 +15,13 @@ public class hud {
 	private Vector mouseStart = new Vector();
 	public boolean canSelect = false;
 	private boolean[] buttonsPressed = new boolean[10];
+	protected static int categoriesOpen = 0;
 	
 	private static PApplet parent;
 	
 	private final static int PADDING_FACTOR = 4;
+	protected final static int IMAGE_WIDTH = 32;
 	
-	private static ArrayList<String> buttons = new ArrayList<String>();
 	private static HashMap<String, HUDCategory> categories = new HashMap<String, HUDCategory>();
 	
 	public hud(PApplet applet) {
@@ -81,13 +80,6 @@ public class hud {
 			applet.line(applet.width - 20, 65, applet.width - 5, 65);
 			applet.line(applet.width - 5, 65, applet.width - 5, 75);
 		} else { applet.line(applet.width - 20, 65, applet.width - 5, 75); }
-
-		//Add new components
-		int index = 0;
-		for (String name: hud.buttons) {
-			applet.image(hud.images.get(name), 4 + 32 * index, applet.height - 32);
-			index++;
-		}
 		
 		if (Global.debug) {
 			this.drawDebug(applet);
@@ -206,9 +198,17 @@ public class hud {
 	}
 
 	public void mouseClicked(PApplet applet, Game game) {
+		int categoriesOpen = 0;
 		for (HUDCategory h: hud.categories.values()) {
-			h.mouseClicked(new Vector(applet.mouseX, applet.mouseY), new Vector(applet.width, applet.height), game);
+			boolean open = h.mouseClicked(
+					new Vector(applet.mouseX, applet.mouseY),
+					new Vector(applet.width,  applet.height), game);
+			
+			if (open) {
+				categoriesOpen++;
+			}
 		}
+		hud.categoriesOpen = categoriesOpen;
 		
 		if (applet.mouseX >= applet.width - 20 && applet.mouseY <= 40 && applet.mouseY >= 20) {
 			game.switchSelectedTool();
@@ -217,41 +217,47 @@ public class hud {
 			game.setWireMode(!game.getWireMode());
 		}
 		
-		//Add new components
-		int index = 0;
-		for (String name: hud.buttons) {
-			if (HelperFunctions.isInsideRect(applet.mouseX, applet.mouseY, 4 + 32 * index, applet.height - 32, 32, 32)) {
-				game.selectedComponent = name;
+		hud.NUM_COMPONENTS = hud.categories.size();
+		for (HUDCategory c: hud.categories.values()) {
+			if (c.buttons.size() > hud.NUM_COMPONENTS) {
+				hud.NUM_COMPONENTS = c.buttons.size();
 			}
-			index++;
 		}
 	}
 
 	public boolean isInsideHUDArea(Vector pos, Vector winSize) {
 		if (pos.x >= 0 && pos.x < 204 && pos.y >= 0 && pos.y < 14) { return true; } //top-left menu
 		if (pos.x >= winSize.x - 30 && pos.y <= 80) { return true; } //top right menu
-		if (pos.x < 4 + 32 * NUM_COMPONENTS && pos.x >= 0 && pos.y >= winSize.y - 32 && pos.y <= winSize.y) { return true; } //bottom left menu
+		if (pos.x < 4 + 32 * NUM_COMPONENTS &&
+			pos.x >= 0 &&
+			pos.y >= winSize.y - 32 * (hud.categoriesOpen + 1) &&
+			pos.y <= winSize.y) { return true; } //bottom left menu
 		return false;
 	}
 	
 	public static void addNewComponentCategory(String name, String iconName) {
-		hud.categories.put(name, new HUDCategory(hud.images.get(iconName), 4 + 32 * NUM_COMPONENTS));
-		hud.NUM_COMPONENTS++;
+		hud.categories.put(iconName, new HUDCategory(hud.images.get(iconName), 4 + hud.IMAGE_WIDTH * hud.categories.size(), name));
 	}
 
 	public static void addNewComponentButton(String name, String categoryName) {
-		if (categoryName != null) {
-			hud.categories.get(categoryName).addButton(new HUDButton(name, hud.images.get(name)));
-		} else {
-			//hud.buttons.add(new HUDButton(name, hud.images.get(name)));
-			hud.NUM_COMPONENTS++;
+		hud.categories.get(categoryName).addButton(new HUDButton(name, hud.images.get(name)));
+	}
+	
+	public static int allocateY() {
+		int x = -1;
+		for (HUDCategory c: hud.categories.values()) {
+			if (c.y > x) {
+				x = c.y;
+			}
+		}
+		return x + 1;
+	}
+	
+	public static void free(int y) {
+		for (HUDCategory c: hud.categories.values()) {
+			if (c.y >= y) {
+				c.y -= 1;
+			}
 		}
 	}
-	
-	public static void addNewComponentButton(String name) {
-		hud.buttons.add(name);
-		hud.NUM_COMPONENTS++;
-	}
-	
-	
 }

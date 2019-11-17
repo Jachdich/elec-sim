@@ -1,6 +1,8 @@
 /*
  * TODO
  * 
+ * !IMPORTANT - SHOULD ALLOW MULTIPLE CATEGORIES OPEN AT ONCE, ABOVE EACHOTHER?
+ * 
  * Some issues here are mirrored from GitHub. These are mostly user-level issues/bugs.
  * Code style bugs/issues/anything else goes here.
  *
@@ -16,6 +18,8 @@
  *When dragging multiple components in snap to grid mode, its not smooth at all
  *snap to grid mode setting
  *
+ *WE NEED A FUDGING SETTINGS MENU - Possibly consider second window, or even seperate library to make it look profesh.
+ *
  *Add 'changes were made do u want to save pwese' on file open #16
  *Fix the damn and gate red outline! #18
  *failsafe for opening multiple save dialogs or similar 
@@ -25,6 +29,7 @@
  *Some UI elements don't respond to font size changes #21
  *
  *Magnify icons when hovering in component selection menu
+ *When hovering over components show tooltip - make a custom "onHover" event, where if there have been say 60 frames and the mouse hasn't moved it resets a timer and calls a function inside hud.
  *
  *these issues need verification to show if they have been fixed
  *
@@ -99,6 +104,8 @@ public class Game {
 	public static String FONT_FAMILY = "SansSerif";
 	public static int FONT_SIZE = 12;
 	
+	public static float FONT_HEIGHT;
+	
 	public Game(PApplet applet) {
 		this.parent = applet;
 		this.hud = new hud(applet);
@@ -107,6 +114,8 @@ public class Game {
 		
 		applet.textAlign(PConstants.LEFT, PConstants.TOP);
 		applet.textFont(Game.FONT);
+		
+		Game.FONT_HEIGHT = applet.textAscent() + applet.textDescent();
 		
 		try {
 			this.gameDataDir = new File(

@@ -50,6 +50,7 @@ for i in get_subdirs("."):
 print(line_count)
 print(whitespace)
 print(comment)
+print(line_count + comment + whitespace)
 
 with open("total.txt", "w") as f:
     f.write(total)
