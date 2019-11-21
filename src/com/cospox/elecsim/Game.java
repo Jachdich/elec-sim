@@ -1,8 +1,6 @@
 /*
  * TODO
  * 
- * !IMPORTANT - SHOULD ALLOW MULTIPLE CATEGORIES OPEN AT ONCE, ABOVE EACHOTHER?
- * 
  * Some issues here are mirrored from GitHub. These are mostly user-level issues/bugs.
  * Code style bugs/issues/anything else goes here.
  *
@@ -21,7 +19,7 @@
  *WE NEED A FUDGING SETTINGS MENU - Possibly consider second window, or even seperate library to make it look profesh.
  *
  *Add 'changes were made do u want to save pwese' on file open #16
- *Fix the damn and gate red outline! #18
+ *Fix the damn and gate red outline! #18 ITS FUGGIN FIXED!!!
  *failsafe for opening multiple save dialogs or similar 
  *When selecting component, first time does not show wire to mouse #11 NEEDS VERIFICATION VERIFIED, not just first time (snap to grid created issue)
  *In wire mode false, wire click detection is slightly off #19

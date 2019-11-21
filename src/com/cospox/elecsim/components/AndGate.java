@@ -43,11 +43,19 @@ public class AndGate extends Component {
 	public void draw(PApplet applet) {
 		float x = HelperFunctions.snap(this.pos.x);
 		float y = HelperFunctions.snap(this.pos.y);
-		if (this.selected) { applet.stroke(255, 20, 20); }
-		else { applet.noStroke(); }
+		int SIZE = 30;
+		applet.noStroke();
 		applet.fill(100);
-		applet.rect(x, y, 30, 15);
-		applet.arc(x + 15, y + 15, 30, 30, 0, PConstants.PI);
+		applet.rect(x, y, SIZE, SIZE / 2);
+		applet.arc(x + SIZE / 2, y + SIZE / 2, SIZE, SIZE, 0, PConstants.PI);
+		
+		if (this.selected) { applet.stroke(255, 20, 20); }
+		applet.line(x, y, x + SIZE, y);
+		applet.line(x, y, x, y + SIZE / 2);
+		applet.line(x + SIZE, y, x + SIZE, y + SIZE / 2);
+		applet.noFill();
+		applet.arc(x + SIZE / 2, y + SIZE / 2, SIZE, SIZE, 0, PConstants.PI);
+		
 		for (Connection c: this.connections) {
 			c.draw(applet);
 		}
