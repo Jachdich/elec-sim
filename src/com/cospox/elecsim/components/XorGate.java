@@ -9,8 +9,8 @@ import processing.core.PApplet;
 import processing.core.PConstants;
 
 public class XorGate extends Component {
-	public XorGate(Vector pos, int posInArray) {
-		super(pos, posInArray);
+	public XorGate(Vector pos, int posInArray, long uuid) {
+		super(pos, posInArray, uuid);
 		this.connections = new Connection[3];
 		float x = HelperFunctions.snap(this.pos.x);
 		float y = HelperFunctions.snap(this.pos.y);
@@ -84,7 +84,7 @@ public class XorGate extends Component {
 	
 	@Override
 	public Component copy() {
-		Component c = new XorGate(this.pos.copy(), this.posInArray);
+		Component c = new XorGate(this.pos.copy(), this.posInArray, this.getUUID());
 		c.connections = this.connections;
 		c.selected = this.selected;
 		return c;

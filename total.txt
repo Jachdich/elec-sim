@@ -1,891 +1,518 @@
-package com.cospox.elecsim.components;
+package com.cospox.elecsim;
 
-import com.cospox.elecsim.Connection;
-import com.cospox.elecsim.ui.hud;
+import com.cospox.elecsim.util.Global;
 import com.cospox.elecsim.util.HelperFunctions;
-import com.cospox.elecsim.util.Vector;
 
 import processing.core.PApplet;
-import processing.core.PConstants;
+import processing.event.MouseEvent;
 
-public class AndGate extends Component {
-	public AndGate(Vector pos, int posInArray) {
-		super(pos, posInArray);
-		this.connections = new Connection[3];
-		
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		
-		this.connections[0] = new Connection(new Vector(x, y - Connection.HEIGHT),
-											 new Vector(posInArray, 0)); //input A
-		this.connections[1] = new Connection(new Vector(x + 30 - Connection.WIDTH, y - Connection.HEIGHT),
-											 new Vector(posInArray, 1)); //input B
-		this.connections[2] = new Connection(new Vector(x + 15 - Connection.WIDTH / 2, y + 30),
-											 new Vector(posInArray, 2)); //output
-	}
-	
-	//run when the application loads
-	public static void onLoad() {
-		hud.addImage("AndGate");
-		hud.addNewComponentButton("AndGate", "BasicGates");
-	}
-	
-	@Override
-	public void updateConnectionsPos() {
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		this.connections[0].pos = new Vector(x, y - Connection.HEIGHT);
-		this.connections[1].pos = new Vector(x + 30 - Connection.WIDTH, y - Connection.HEIGHT);
-		this.connections[2].pos = new Vector(x + 15 - Connection.WIDTH / 2, y + 30);
+public class Main extends PApplet{
+	public Game game;
+	public static void main(String[] args) {
+		PApplet.main("com.cospox.elecsim.Main");
 	}
 
 	@Override
-	public void draw(PApplet applet) {
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		if (this.selected) { applet.stroke(255, 20, 20); }
-		else { applet.noStroke(); }
-		applet.fill(100);
-		applet.rect(x, y, 30, 15);
-		applet.arc(x + 15, y + 15, 30, 30, 0, PConstants.PI);
-		for (Connection c: this.connections) {
-			c.draw(applet);
-		}
+	public void settings() {
+		//int offset = 50;
+		//int h = 720 - offset;
+		this.size(480, 640, P2D);
 	}
 
 	@Override
-	public void update() {
-		boolean output = this.connections[0].on && this.connections[1].on;
-		for (Connection c: this.connections) {
-			c.off();
-		}
-		if (output) {
-			this.connections[2].on();
-		}
+	public void setup() {
+		this.frameRate(60);
+		surface.setResizable(true);
+		this.game = new Game(this);
 	}
 
 	@Override
-	public boolean isMouseIntersecting(Vector pos, float zoom, Vector translate) {
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		x = translate.x + x * zoom;
-		y = translate.y + y * zoom;
-		return HelperFunctions.isInsideRect(pos.x, pos.y, x, y, 30 * zoom, 30 * zoom);
-	}
-	
-	@Override
-	public Component copy() {
-		Component c = new AndGate(this.pos.copy(), this.posInArray);
-		c.connections = this.connections; //TODO cannot copy connections (because wires) but they don't move with component
-		c.selected = this.selected;
-		return c;
-	}
-}
-
-package com.cospox.elecsim.components;
-
-import com.cospox.elecsim.Connection;
-import com.cospox.elecsim.ui.hud;
-import com.cospox.elecsim.util.Vector;
-
-public class AT28C256 extends IC {
-	
-	private byte[] memory = new byte[32768];
-	
-	private final static int[] IO_PINS = new int[]{18, 17, 16, 15, 14, 12, 11, 10};
-	private final static int[] ADDR_PINS = new int[]{0, 25, 1, 22, 20, 23, 24, 2, 3, 4, 5, 6, 7, 8, 9};
-	
-	private boolean previousWE;
-	private boolean previousCE;
-	
-	public AT28C256(Vector pos, int posInArray) {
-		super(pos, 28, posInArray);
-
-	}
-	
-	@Override
-	public void update() {
-		boolean we = this.connections[26].on;
-		boolean oe = this.connections[21].on;
-		boolean ce = this.connections[19].on;
-		
-		boolean[] output = new boolean[this.numPins];
-		
-		if (((we && ce && !this.previousWE) || (we && ce && !this.previousCE)) && !oe) {
-			//rising edge of either WE or CE, with the other one high
-			int address = 0;
-			for (int pin: ADDR_PINS) {
-				address = address << 1 | (this.connections[pin].on ? 1 : 0);
-			}
-			byte data = 0;
-			for (int pin: IO_PINS) {
-				data = (byte)(data << 1 | (this.connections[pin].on ? 1 : 0));
-			}
-			this.memory[address] = data;
+	public void draw() {
+		this.game.draw(this);
+		if (Global.debug) {
 			
+			this.fill(255, 0, 0);
+			this.text(this.frameRate, 2, 38);
+			Runtime rt = Runtime.getRuntime();
+			double usedMiB = HelperFunctions.round((rt.totalMemory() - rt.freeMemory()) / 1024.0 / 1024.0, 3);
+			double totalMiB = HelperFunctions.round(rt.totalMemory() / 1024.0 / 1024.0, 3);
+			this.text(Double.toString(usedMiB) + "/" + Double.toString(totalMiB), 2, 50);
+			this.fill(255);
 		}
-		
-		if (oe && ce && !we) {
-			int address = 0;
-			for (int pin: ADDR_PINS) {
-				address = address << 1 | (this.connections[pin].on ? 1 : 0);
-			}
-			byte data = this.memory[address];
-			for (int i = 0; i < 8; i++) {
-				boolean bit = ((data >> i) & 0x1) == 0 ? false : true;
-				if (bit) {
-					output[IO_PINS[7 - i]] = true;
-				} else {
-					output[IO_PINS[7 - i]] = false;
-				}
-			}
-		}
-		
-		for (int i = 0; i < this.connections.length; i++) {
-			Connection c = this.connections[i];
-			boolean x    = output[i];
-			if (x) {
-				c.on();
-			} else {
-				c.off();
-			}
-		}
-		
-		this.previousWE = we;
-		this.previousCE = ce;
+	}
+
+	@Override
+	public void mouseClicked() {
+		this.game.mouseClicked(this);
+	}
+
+	@Override
+	public void keyPressed() {
+		//println("'" + key + "' " + keyCode);
+		this.game.keyPressed(this.key, this.keyCode);
+	}
+	@Override
+	public void keyReleased() {
+		this.game.keyReleased(this.key, this.keyCode);
+	}
+
+	@Override
+	public void mouseWheel(MouseEvent event) {
+		this.game.mouseWheel(event, this);
+	}
+
+	@Override
+	public void mouseDragged(MouseEvent event) {
+		this.game.mouseDragged(event, this);
 	}
 	
-	public static void onLoad() {
-		hud.addImage("AT28C256");
-		hud.addNewComponentButton("AT28C256", "ICs");
+	@Override
+	public void mousePressed() {
+		this.game.mousePressed(this);
+	}
+	
+	@Override
+	public void mouseReleased() {
+		this.game.mouseReleased(this);
+	}
+	
+	@Override
+	public void exit() {
+		if (this.game.dispose()) {
+			super.exit();
+		}
 	}
 }
 
-package com.cospox.elecsim.components;
+package com.cospox.elecsim.util;
+
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import com.cospox.elecsim.components.Component;
+
+public final class OnLoadManager {
+
+    public static void doOnLoad() throws Exception {
+        for (Class<?> cls : getClasses(Component.class)) {
+        	try {
+            	Method onLoad = cls.getDeclaredMethod("onLoad");
+            	onLoad.setAccessible(true);
+            	onLoad.invoke(null);
+        	} catch (NoSuchMethodException e) {
+        		System.out.println("[WARNING] Class <" + cls.getName() + "> has no <onLoad> method");
+        	}
+        }
+    }
+
+    public static void doOnLoadPriority() throws Exception {
+        for (Class<?> cls : getClasses(Component.class)) {
+        	try {
+            	Method onLoad = cls.getDeclaredMethod("onLoadPriority");
+            	onLoad.setAccessible(true);
+            	onLoad.invoke(null);
+        	} catch (NoSuchMethodException e) {
+        		System.out.println("[WARNING] Class <" + cls.getName() + "> has no <onLoadPriority> method");
+        	}
+        }
+    }
+
+    private static List<Class<?>> getClasses(Class<?> caller)
+            throws IOException, URISyntaxException {
+
+        return Files.walk(getPackagePath(caller))
+                .filter(Files::isRegularFile)
+                .filter(file -> file.toString().endsWith(".class"))
+                .map(path -> mapPathToClass(path, caller.getPackage().getName()))
+                .collect(Collectors.toList());
+    }
+
+    private static Class<?> mapPathToClass(Path clsPath, String packageName) {
+        String className = clsPath.getFileName().toString();
+        className = className.substring(0, className.length() - 6);
+        return loadClass(packageName + "." + className);
+    }
+
+    private static Path getPackagePath(Class<?> caller)
+            throws IOException, URISyntaxException {
+        String packageName = createPackageName(caller);
+        Enumeration<URL> resources = caller.getClassLoader()
+                .getResources(packageName);
+        
+        URL element = resources.nextElement();
+        
+        if (element.toURI().toString().startsWith("file:")) {
+        	return Paths.get(element.toURI());
+        }
+        
+        final Map<String, String> env = new HashMap<>();
+        final String[] array = element.toURI().toString().split("!");
+        final FileSystem fs = FileSystems.newFileSystem(URI.create(array[0]), env);
+        final Path path = fs.getPath(array[1]);
+
+		return path;
+    }
+
+    private static String createPackageName(Class<?> caller) {
+        return caller.getPackage().getName().replace(".", "/");
+    }
+
+    private static Class<?> loadClass(String name) {
+        try {
+            return Class.forName(name);
+        } catch (ClassNotFoundException e) {
+            return null;
+        }
+    }
+}
+
+package com.cospox.elecsim.util;
+
+import processing.core.PApplet;
+
+public class HelperFunctions {
+	public static boolean isInsideRect(int x, int y, int rx, int ry, int rw, int rh) {
+		if (x >= rx && y >= ry) {
+			if (x <= rx + rw && y <= ry + rh) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static boolean isInsideRect(float x, float y, float rx, float ry, float rw, float rh) {
+		if (x >= rx && y >= ry) {
+			if (x <= rx + rw && y <= ry + rh) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static boolean isPointOnLine(Vector a, Vector b, Vector c, float threshhold) {
+		double top = Math.abs((c.y - a.y) * b.x
+							- (c.x - a.x) * b.y
+						 	+ c.x * a.y - c.y * a.x);
+		
+		double bottom = Math.sqrt(Math.pow(c.y - a.y, 2)
+				                + Math.pow(c.x - a.x, 2));
+		
+		double dist = top / bottom;
+		
+		//if (a.x == c.x) { 
+		//	System.out.println(a.toString() + b.toString() + c.toString());
+		//	return true; 
+		//} 
+		if (!(dist < threshhold)) { return false; }
+		if (b.x < c.x) { return false; }
+		if (b.y > (a.y >= c.y ? a : c).y) { return false; }
+		return true;
+	}
+
+	public static double gradient(Vector x, Vector y) {
+		return (y.y - x.y) / (y.x - x.x);
+	}
+
+	public static double round(double value, int places) {
+		if (places < 0) { throw new IllegalArgumentException(); }
+		long factor = (long) Math.pow(10, places);
+		value *= factor;
+		long tmp = Math.round(value);
+		return (double) tmp / factor;
+	}
+
+	public static boolean isInsideCircle(Vector point, Vector centre, float radius) {
+		if (PApplet.dist(point.x, point.y, centre.x, centre.y) <= radius) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public static boolean isInsideTriangle(Vector s, Vector a, Vector b, Vector c) {
+		float as_x = s.x - a.x;
+		float as_y = s.y - a.y;
+		boolean s_ab = (b.x - a.x) * as_y - (b.y - a.y) * as_x > 0;
+		if ((c.x - a.x) * as_y - (c.y - a.y) * as_x > 0 == s_ab) { return false; }
+		if ((c.x - b.x) * (s.y - b.y) - (c.y - b.y) * (s.x - b.x) > 0 != s_ab) { return false; }
+		return true;
+	}
+
+	public static boolean XOR(boolean a, boolean b) {
+		if (a | b && !(a && b)) {
+			return true;
+		}
+		return false;
+	}
+	
+	public static float snap(float x) {
+		return Math.round(x / 7) * 7F;
+	}
+}
+package com.cospox.elecsim.util;
+
+import java.util.ArrayList;
+
+import com.cospox.elecsim.Game;
+import com.cospox.elecsim.Wire;
+import com.cospox.elecsim.components.Component;
+
+public class ComponentEncoder {
+	public static Wire unpackWireCall(String call, Game game) {
+		//convert 'Wire(args)' into needed info to construct a Wire object
+		String data = call.replace("Wire(", "").replace(")", "");
+		String s = data.split(",")[0].replace("[", "").replace("]", "");
+		String e = data.split(",")[1].replace("[", "").replace("]", "");
+		
+		long sposx = Integer.parseInt(s.split(" ")[0]);
+		int sposy  = Integer.parseInt(s.split(" ")[1]);
+		long eposx = Integer.parseInt(e.split(" ")[0]);
+		int eposy  = Integer.parseInt(e.split(" ")[1]);
+		
+		Component a = game.getComponentByUUID(sposx);
+		Component b = game.getComponentByUUID(eposx);
+		if (a == null || b == null) {
+			System.out.println("Oopsie, did a bad");
+			return new Wire(game.components.get(0).connections[0], game.components.get(1).connections[0], game.components.get(0), game.components.get(1));
+		}
+		
+		return new Wire(a.connections[(int)sposy],
+								b.connections[eposy],
+								a,
+								b);
+	}
+	
+	public static Component unpackComponentCall(String call, ArrayList<Component> components) {
+		//convert 'Component(args)' into needed data to reconstruct a Component object
+		String vectorCall = call.split("\\(")[2].split("\\)")[0];
+		System.out.println(call);
+		long uuid = Long.parseLong(call.split("\\)")[1].replace(" ", "").replace(",", ""));
+		String type = call.split("\\(")[0];
+		float x = Float.parseFloat(vectorCall.split(",")[0].replace(" ", ""));
+		float y = Float.parseFloat(vectorCall.split(",")[1].replace(" ", ""));
+		return ComponentGenerator.generateNewComponent(type, new Vector(x, y), components.size(), uuid);
+	}
+	
+	public static String componentToString(Component c) {
+		String out = "";
+		out += c.getClass().getSimpleName() + "(";
+		out += c.pos.toString() + ",";
+		out += Long.toString(c.getUUID());
+		out += ");";
+		return out;
+	}
+	
+	public static String wireToString(Wire w) {
+		String out = "";
+		out += "Wire(";
+		out += "[" + w.getPosition(w.s) + "],";
+		out += "[" + w.getPosition(w.e) + "]);";
+		return out;
+	}
+}
+
+package com.cospox.elecsim.util;
+
+public class Global {
+	public static final boolean debug = false;
+}
+
+package com.cospox.elecsim.util;
+
+public class Vector {
+	public float x;
+	public float y;
+	public Vector() {
+		this.x = 0;
+		this.y = 0;
+	}
+	public Vector(float x, float y) {
+		this.x = x;
+		this.y = y;
+	}
+	@Override
+	public String toString() {
+		return "new Vector(" + Float.toString(this.x) + ", " + Float.toString(this.y) + ")";
+	}
+	public void set(float x, float y) {
+		this.x = x;
+		this.y = y;
+	}
+	public void set(int x, int y) {
+		this.x = x;
+		this.y = y;
+	}
+	
+	public Vector copy() {
+		return new Vector(this.x, this.y);
+	}
+}
+
+package com.cospox.elecsim.util;
 
 import java.util.HashMap;
 
-import com.cospox.elecsim.Connection;
-import com.cospox.elecsim.ui.hud;
-import com.cospox.elecsim.util.HelperFunctions;
-import com.cospox.elecsim.util.Vector;
-
-import processing.core.PApplet;
-
-public class Component {
-	public Vector pos;
-	public boolean selected = false;
-	public Connection[] connections;
-	public int posInArray;
+public class KeyHandler {
+	private HashMap<Integer, Boolean> keys = new HashMap<Integer, Boolean>();
+	private HashMap<Character, Boolean> keyChars = new HashMap<Character, Boolean>();
 	
-	public HashMap<String, Object> externalFlags = new HashMap<String, Object>();
-	public Component(Vector pos, int posInArray) {
-		this.pos = pos;
-		this.posInArray = posInArray;
+	public KeyHandler() {
+		for (int i = 0; i < 256; i++) { this.keys.put(i, false); }
 	}
-
-	public Connection getConnections(int index) {
-		return this.connections[index];
+	public void pressed(int keyCode, char key) {
+		this.keys.put(keyCode, true);
+		this.keyChars.put(key, true);
 	}
-
-	public boolean isMouseIntersecting(Vector mousePos, float zoom, Vector translate) { return false; }
-	public void draw(PApplet applet) {}
-	public void update() {}
-	public void onMousePressed(PApplet applet, float zoom, Vector translate) {}
-
-	public Connection getClickedConnection(Vector pos, float zoom, Vector translate) {
-		for (Connection c: this.connections) {
-			float cx = translate.x + c.pos.x * zoom;
-			float cy = translate.y + c.pos.y * zoom;
-			float cw = Connection.WIDTH  * zoom;
-			float ch = Connection.HEIGHT * zoom;
-			if (HelperFunctions.isInsideRect(pos.x, pos.y, cx, cy, cw, ch)) {
-				return c;
-			}
-		}
-		return null;
+	public void released(int keyCode, char key) {
+		this.keys.put(keyCode, false);
+		this.keyChars.put(key, false);
 	}
-	public void setX(float x) {
-		//for (Connection c: this.connections) {
-		//	c.pos.x += x - this.pos.x;
-		//}
-		
-		this.pos.x = x;
-		this.updateConnectionsPos();
+	
+	public boolean get(int keyCode) {
+		return this.keys.get(keyCode);
 	}
-
-	public void setY(float y) {
-		//for (Connection c: this.connections) {
-		//	c.pos.y += y - this.pos.y;
-		//}
-		
-		this.pos.y = y;
-		this.updateConnectionsPos();
-	}
-
-	public void select() {
-		this.selected = true;
-		for (Connection c: this.connections) {
-			c.selected = true;
-		}
-	}
-
-	public void deSelect() {
-		this.selected = false;
-		for (Connection c: this.connections) {
-			c.selected = false;
+	
+	public boolean get(char key) {
+		if (this.keyChars.containsKey(key)) {
+			return this.keyChars.get(key);
+		} else {
+			return false;
 		}
 	}
 	
-	public Component copy() {
-		return null;
+	public boolean shift() {
+		return this.keys.get(16);
 	}
-
-	public void updateConnectionsPos() {
-	}
-
-	public static void onLoadPriority() {
-		hud.addImage("BasicGates");
-		hud.addImage("IO");
-		hud.addNewComponentCategory("BasicGates", "BasicGates");
-		hud.addNewComponentCategory("IO", "IO");
-	}
-
-}
-
-package com.cospox.elecsim.components;
-
-import com.cospox.elecsim.Connection;
-import com.cospox.elecsim.ui.hud;
-import com.cospox.elecsim.util.HelperFunctions;
-import com.cospox.elecsim.util.Vector;
-
-import processing.core.PApplet;
-
-public class HighSource extends Component {
-	public HighSource(Vector pos, int posInArray) {
-		super(pos, posInArray);
-		this.connections = new Connection[1];
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		this.connections[0] = new Connection(new Vector(x + 15 - Connection.WIDTH / 2.0F, y + 20),
-											 new Vector(posInArray, 0)); //output
-	}
-	
-	@Override
-	public void updateConnectionsPos() {
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		this.connections[0].pos = new Vector(x + 15 - Connection.WIDTH / 2.0F, y + 20);
-	}
-
-	@Override
-	public void draw(PApplet applet) {
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		if (this.selected) { applet.stroke(255, 20, 20); }
-		else { applet.noStroke(); }
-		
-		float T_HEIGHT = applet.textAscent() + applet.textDescent();
-		
-		applet.fill(100);
-		applet.rect(x, y, 30, 20);
-		//applet.textSize(10);
-		applet.fill(20);
-		applet.text("1", x + 12, y + T_HEIGHT - 12);
-		//applet.textSize(11.9F);
-		for (Connection c: this.connections) {
-			c.draw(applet);
-		}
-	}
-
-	@Override
-	public void update() {
-		this.connections[0].on();
-	}
-
-	@Override
-	public boolean isMouseIntersecting(Vector pos, float zoom, Vector translate) {
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		x = translate.x + x * zoom;
-		y = translate.y + y * zoom;
-		return HelperFunctions.isInsideRect(pos.x, pos.y, x, y, 30 * zoom, 20 * zoom);
-	}
-	
-	@Override
-	public Component copy() {
-		//change class from ComponentTemplate
-		Component c = new HighSource(this.pos.copy(), this.posInArray);
-		c.connections = this.connections; //TODO cannot copy connections (because wires) but they don't move with component
-		c.selected = this.selected;
-		return c;
-	}
-	
-	public static void onLoad() {
-		hud.addImage("HighSource");
-		hud.addNewComponentButton("HighSource", "IO");
+	public boolean ctrl() {
+		return this.keys.get(17);
 	}
 }
 
-package com.cospox.elecsim.components;
+package com.cospox.elecsim.util;
 
-import com.cospox.elecsim.Connection;
-import com.cospox.elecsim.ui.hud;
-import com.cospox.elecsim.util.HelperFunctions;
-import com.cospox.elecsim.util.Vector;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 
-import processing.core.PApplet;
-
-public class IC extends Component {
-	
-	protected int numPins;
-	private final static int HEIGHT = 30;
-	private final static int PIN_SPACING = 7;
-	private final static boolean DRAW_PIN_NUMBERS = false;
-	
-	public IC(Vector pos, int numPins, int posInArray) {
-		super(pos, posInArray);
-		this.numPins = numPins;
-		
-		if (this.numPins % 2 != 0) {
-			throw new IllegalArgumentException("Number of pins must be divisible by two");
-		}
-		
-		this.connections = new Connection[numPins];
-		for (int i = 0; i < numPins; i++) {
-			this.connections[i] = new Connection(new Vector(), new Vector(posInArray, i));
-		}
-		this.updateConnectionsPos();
-	}
-	
-	@Override
-	public void draw(PApplet applet) {
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		applet.fill(0);
-		applet.stroke(0, 255, 0);
-		applet.rect(x, y, (this.numPins - 1) * PIN_SPACING, HEIGHT);
-		int i = 0;
-		for (Connection c: this.connections) {
-			c.draw(applet);
-			if (DRAW_PIN_NUMBERS) {
-				applet.fill(0, 0, 255);
-				applet.stroke(255, 0, 0);
-				applet.text(Integer.toString(i), c.pos.x, c.pos.y);
-				i++;
+public class FileHandler {
+	public static void write(String fileName, String file) {
+		FileWriter out = null;
+		try {
+			out = new FileWriter(fileName);
+			out.write(file);
+			out.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (out != null) {
+				try {
+					out.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
 	
-	@Override
-	public void updateConnectionsPos() {
+	public static String read(String filename) {
+		BufferedReader reader = null;
+		String out = "";
+		try {
+			String line = null;
+			reader = new BufferedReader(new FileReader(filename));
+			while ((line = reader.readLine()) != null) {
+				out += line;
+			}
+		} catch (IOException e) {
+			
+		} finally {
+			if (reader != null) {
+				try {
+					reader.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+					//TODO AAAHHHH HELP
+				}
+			}
+		}
+		return out;
+	}
 
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		
-		float OFFSET = PIN_SPACING / 2;
-		
-		//I don't know why this works, but it does
-		for (int i = 0; i < numPins / 2; i++) {
-			this.connections[i].pos = new Vector(x + OFFSET + (i * 2) * PIN_SPACING,
-					                             y + HEIGHT);
-		}
-		
-		for (int i = numPins / 2; i < numPins; i++) {
-			this.connections[numPins - (i - numPins / 2 + 1)].pos = new Vector(x + OFFSET + (i - numPins / 2) * 2 * PIN_SPACING,
-					                             y - Connection.HEIGHT);
-		}
-	}
-	
-	@Override
-	public boolean isMouseIntersecting(Vector pos, float zoom, Vector translate) {
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		x = translate.x + x * zoom;
-		y = translate.y + y * zoom;
-		return HelperFunctions.isInsideRect(pos.x, pos.y, x, y, (this.numPins - 1) * PIN_SPACING * zoom, HEIGHT * zoom);
-	}
-	
-	public static void onLoadPriority() {
-		hud.addImage("ICs");
-		hud.addNewComponentCategory("ICs", "ICs");
+	public static boolean fileExists(String string) {
+		File f = new File(string);
+		return (f.exists() && !f.isDirectory());
 	}
 }
 
-package com.cospox.elecsim.components;
+package com.cospox.elecsim.util;
+
+import java.util.ArrayList;
+
+import com.cospox.elecsim.Wire;
+import com.cospox.elecsim.components.Component;
+
+public class HistorySave {
+	public ArrayList<Component> components = new ArrayList<Component>();
+	public ArrayList<Wire>      wires      = new ArrayList<Wire>();
+	
+	public HistorySave(ArrayList<Component> components, ArrayList<Wire> wires) {
+		for (Component c: components) {
+			this.components.add(c.copy());
+		}
+		for (Wire w: wires) {
+			this.wires.add(w.copy());
+		}
+	}
+}
+
+package com.cospox.elecsim.util;
+
+public class Errors {
+	public static void error(String message) {
+		System.out.println(message);
+	}
+}
+
+package com.cospox.elecsim.util;
 
 import com.cospox.elecsim.Connection;
-import com.cospox.elecsim.ui.hud;
-import com.cospox.elecsim.util.HelperFunctions;
-import com.cospox.elecsim.util.Vector;
+import com.cospox.elecsim.components.Component;
 
 import processing.core.PApplet;
 
-public class Joint extends Component {
-	public Joint(Vector pos, int posInArray) {
-		super(pos, posInArray);
+public class ComponentTemplate extends Component {
+	public ComponentTemplate(Vector pos, int posInArray, long uuid) {
+		super(pos, posInArray, uuid);
 		this.connections = new Connection[1];
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		this.connections[0] = new Connection(new Vector(x, y),
-											 new Vector(posInArray, 0));
-	}
-	
-	@Override
-	public void updateConnectionsPos() {
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		this.connections[0].pos = new Vector(x, y);
-	}
-	
-	@Override
-	public void draw(PApplet applet) {
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		if (this.connections[0].on) { applet.fill(200); }
-		else { applet.fill(100); }
-		
-		if (this.selected) { applet.stroke(255, 20, 20); }
-		else { applet.noStroke(); }
-		
-		applet.circle(x, y, 8);
-	}
-	
-	@Override
-	public boolean isMouseIntersecting(Vector pos, float zoom, Vector translate) {
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		x = translate.x + x * zoom;
-		y = translate.y + y * zoom;
-		return HelperFunctions.isInsideCircle(new Vector(pos.x, pos.y), new Vector(x, y), 6);
-	}
-	
-	@Override
-	public Connection getClickedConnection(Vector pos, float zoom, Vector translate) {
-		if (this.isMouseIntersecting(pos, zoom, translate)) {
-			return this.connections[0];
-		}
-		return null;
-	}
-	
-	@Override
-	public void update() {
-		this.connections[0].off();
-	}
-	
-	@Override
-	public Component copy() {
-		Component c = new Joint(this.pos.copy(), this.posInArray);
-		c.connections = this.connections;
-		c.selected = this.selected;
-		return c;
-	}
-	
-	public static void onLoad() {
-		hud.addImage("Joint");
-		hud.addNewComponentButton("Joint", "IO");
-	}
-}
-
-package com.cospox.elecsim.components;
-
-import com.cospox.elecsim.Connection;
-import com.cospox.elecsim.ui.hud;
-import com.cospox.elecsim.util.HelperFunctions;
-import com.cospox.elecsim.util.Vector;
-
-import processing.core.PApplet;
-
-public class LowSource extends Component {
-	public LowSource(Vector pos, int posInArray) {
-		super(pos, posInArray);
-		this.connections = new Connection[1];
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		this.connections[0] = new Connection(new Vector(x + 15 - Connection.WIDTH / 2.0F, y + 20),
-											 new Vector(posInArray, 0)); //output
-	}
-	
-	@Override
-	public void updateConnectionsPos() {
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		this.connections[0].pos = new Vector(x + 15 - Connection.WIDTH / 2.0F, y + 20);
-	}
-
-	@Override
-	public void draw(PApplet applet) {
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		if (this.selected) { applet.stroke(255, 20, 20); }
-		else { applet.noStroke(); }
-		
-		float T_HEIGHT = applet.textAscent() + applet.textDescent();
-		
-		applet.fill(100);
-		applet.rect(x, y, 30, 20);
-		applet.fill(20);
-		applet.text("0", x + 12, y + T_HEIGHT - 12);
-		for (Connection c: this.connections) {
-			c.draw(applet);
-		}
-	}
-
-	@Override
-	public void update() {
-		this.connections[0].off();
-	}
-
-	@Override
-	public boolean isMouseIntersecting(Vector pos, float zoom, Vector translate) {
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		x = translate.x + this.pos.x * zoom;
-		y = translate.y + this.pos.y * zoom;
-		return HelperFunctions.isInsideRect(pos.x, pos.y, x, y, 30 * zoom, 20 * zoom);
-	}
-	
-	@Override
-	public Component copy() {
-		//change class from ComponentTemplate
-		Component c = new LowSource(this.pos.copy(), this.posInArray);
-		c.connections = this.connections; //TODO cannot copy connections (because wires) but they don't move with component
-		c.selected = this.selected;
-		return c;
-	}
-	
-	public static void onLoad() {
-		hud.addImage("LowSource");
-		hud.addNewComponentButton("LowSource", "IO");
-	}
-}
-
-package com.cospox.elecsim.components;
-
-import com.cospox.elecsim.Connection;
-import com.cospox.elecsim.ui.hud;
-import com.cospox.elecsim.util.HelperFunctions;
-import com.cospox.elecsim.util.Vector;
-
-import processing.core.PApplet;
-
-public class NotGate extends Component {
-	public NotGate(Vector pos, int posInArray) {
-		super(pos, posInArray);
-		this.connections = new Connection[2];
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		this.connections[0] = new Connection(new Vector(x + 14, y - 10), new Vector(posInArray, 0));
-		this.connections[1] = new Connection(new Vector(x + 14, y + 34), new Vector(posInArray, 1));
-	}
-	
-	@Override
-	public void updateConnectionsPos() {
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		this.connections[0].pos = new Vector(x + 14, y - 10);
-		this.connections[1].pos = new Vector(x + 14, y + 34);
-	}
-
-	@Override
-	public void draw(PApplet applet) {
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		if (this.selected) { applet.stroke(255, 0, 0); }
-		else { applet.noStroke(); }
-		applet.fill(100);
-		applet.triangle(x, y, x + 30, y, x + 15, y + 30);
-		applet.arc(x + 15, y + 30, 8, 8, (float)-1.11, (float)4.25);
-		for (Connection c: this.connections) {
-			c.draw(applet);
-		}
-	}
-
-	@Override
-	public void update() {
-		boolean on = this.connections[0].on;
-		for (Connection c: this.connections) {
-			c.off();
-		}
-		if (on) {
-			this.connections[1].off();
-		} else {
-			this.connections[1].on();
-		}
-	}
-	
-	@Override
-	public boolean isMouseIntersecting(Vector pos, float zoom, Vector translate) {
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		x = translate.x + x * zoom;
-		y = translate.y + y * zoom;
-		if (HelperFunctions.isInsideTriangle(pos,
-				new Vector(x, y),
-				new Vector(x + 30 * zoom, y),
-				new Vector(x + 15 * zoom, y + 30 * zoom))) {
-			return true;
-		}
-		if (HelperFunctions.isInsideCircle(pos, new Vector(x + 15 * zoom, y + 30 * zoom), 8 * zoom)) {
-			return true;
-		}
-		return false;
-	}
-	
-	@Override
-	public Component copy() {
-		Component c = new NotGate(this.pos.copy(), this.posInArray);
-		c.connections = this.connections;
-		c.selected = this.selected;
-		return c;
-	}
-	
-	public static void onLoad() {
-		hud.addImage("NotGate");
-		hud.addNewComponentButton("NotGate", "BasicGates");
-	}
-}
-
-package com.cospox.elecsim.components;
-
-import com.cospox.elecsim.Connection;
-import com.cospox.elecsim.ui.hud;
-import com.cospox.elecsim.util.HelperFunctions;
-import com.cospox.elecsim.util.Vector;
-
-import processing.core.PApplet;
-import processing.core.PConstants;
-
-public class OrGate extends Component {
-	public OrGate(Vector pos, int posInArray) {
-		super(pos, posInArray);
-		this.connections = new Connection[3];
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		this.connections[0] = new Connection(new Vector(x + 5, y - Connection.HEIGHT + 9), 
-											 new Vector(posInArray, 0)); // input A
-		this.connections[1] = new Connection(new Vector(x + 25 - Connection.WIDTH, y - Connection.HEIGHT + 9),
-											 new Vector(posInArray, 1)); // input B
-		this.connections[2] = new Connection(new Vector(x + 15 - Connection.WIDTH / 2, y + 30), 
-											 new Vector(posInArray, 2)); // output
-	}
-	
-	@Override
-	public void updateConnectionsPos() {
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		this.connections[0].pos = new Vector(x + 5, y - Connection.HEIGHT + 9); // input A
-		this.connections[1].pos = new Vector(x + 25 - Connection.WIDTH, y - Connection.HEIGHT + 9); // input B
-		this.connections[2].pos = new Vector(x + 15 - Connection.WIDTH / 2, y + 30);
-	}
-
-	@Override
-	public void draw(PApplet applet) {
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		applet.noStroke();
-		applet.fill(100);
-		applet.rect(x, y, 30, 15);
-		if (this.selected) {
-			applet.stroke(255, 20, 20);
-		} else {
-			applet.noStroke();
-		}
-		applet.line(x, y, x, y + 15);
-		applet.line(x + 30, y, x + 30,
-				y + 15);
-		applet.arc(x + 15, y + 15, 30, 30, 0, PConstants.PI,
-				PConstants.OPEN);
-		applet.fill(255);
-		applet.arc(x + 15, y - 4, 30, 30, (float) 0.26,
-				PConstants.PI - (float) 0.26, PConstants.OPEN);
-		for (Connection c : this.connections) {
-			c.draw(applet);
-		}
-	}
-
-	@Override
-	public void update() {
-		boolean output = this.connections[0].on || this.connections[1].on;
-		for (Connection c : this.connections) {
-			c.off();
-		}
-		if (output) {
-			this.connections[2].on();
-		}
-	}
-
-	@Override
-	public boolean isMouseIntersecting(Vector pos, float zoom, Vector translate) {
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		x = translate.x + x * zoom;
-		y = translate.y + y * zoom;
-		return HelperFunctions.isInsideRect(pos.x, pos.y, x, y, 30
-				* zoom, 30 * zoom);
-	}
-	
-	@Override
-	public Component copy() {
-		Component c = new OrGate(this.pos.copy(), this.posInArray);
-		c.connections = this.connections;
-		c.selected = this.selected;
-		return c;
-	}
-	
-	public static void onLoad() {
-		hud.addImage("OrGate");
-		hud.addNewComponentButton("OrGate", "BasicGates");
-	}
-}
-package com.cospox.elecsim.components;
-
-import com.cospox.elecsim.Connection;
-import com.cospox.elecsim.ui.hud;
-import com.cospox.elecsim.util.HelperFunctions;
-import com.cospox.elecsim.util.Vector;
-
-import processing.core.PApplet;
-
-public class Switch extends Component {
-	public boolean on = false;
-	public int radius = 15;
-
-	public Switch(Vector pos, int posInArray) {
-		super(pos, posInArray);
-		this.connections = new Connection[1];
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		this.connections[0] = new Connection(new Vector(x, y + this.radius),
-											 new Vector(posInArray, 0));
-	}
-	
-	@Override
-	public void updateConnectionsPos() {
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		this.connections[0].pos = new Vector(x, y + this.radius);
-	}
-
-	@Override
-	public void draw(PApplet applet) {
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		if (this.on) { applet.fill(200); }
-		else { applet.fill(100); }
-
-		if (this.selected) { applet.stroke(255, 20, 20); }
-		else { applet.noStroke(); }
-		applet.circle(x, y, this.radius * 2);
-		this.connections[0].draw(applet);
-	}
-
-	@Override
-	public void onMousePressed(PApplet applet, float zoom, Vector translate) {
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		x = translate.x + x * zoom;
-		y = translate.y + y * zoom;
-		if (PApplet.dist(x, y, applet.mouseX, applet.mouseY) < this.radius * zoom) {
-			this.on = !this.on;
-		}
-	}
-
-	@Override
-	public void update() {
-		if (this.on) {
-			this.connections[0].on();
-		} else {
-			this.connections[0].off();
-		}
-	}
-
-	@Override
-	public boolean isMouseIntersecting(Vector pos, float zoom, Vector translate) {
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		x = translate.x + x * zoom;
-		y = translate.y + y * zoom;
-		if (HelperFunctions.isInsideCircle(pos, new Vector(x, y), this.radius * zoom)) {
-			return true;
-		}
-		return false;
-	}
-	
-	@Override
-	public Component copy() {
-		Component c = new Switch(this.pos.copy(), this.posInArray);
-		c.connections = this.connections;
-		c.selected = this.selected;
-		return c;
-	}
-	
-	public static void onLoad() {
-		hud.addImage("Switch");
-		hud.addNewComponentButton("Switch", "IO");
-	}
-}
-
-package com.cospox.elecsim.components;
-
-import com.cospox.elecsim.Connection;
-import com.cospox.elecsim.ui.hud;
-import com.cospox.elecsim.util.HelperFunctions;
-import com.cospox.elecsim.util.Vector;
-
-import processing.core.PApplet;
-import processing.core.PConstants;
-
-public class XorGate extends Component {
-	public XorGate(Vector pos, int posInArray) {
-		super(pos, posInArray);
-		this.connections = new Connection[3];
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		this.connections[0] = new Connection(new Vector(x + 5, y - Connection.HEIGHT + 4),
+		this.connections[0] = new Connection(new Vector(this.pos.x, this.pos.y - Connection.HEIGHT),
 											 new Vector(posInArray, 0)); //input A
-		this.connections[1] = new Connection(new Vector(x + 25 - Connection.WIDTH, y - Connection.HEIGHT + 4),
-											 new Vector(posInArray, 1)); //input B
-		this.connections[2] = new Connection(new Vector(x + 15 - Connection.WIDTH / 2, y + 30),
-											 new Vector(posInArray, 2)); //output
-	}
-	
-	public static void onLoad() {
-		hud.addImage("XorGate");
-		hud.addNewComponentButton("XorGate", "BasicGates");
 	}
 	
 	@Override
 	public void updateConnectionsPos() {
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		this.connections[0].pos = new Vector(x + 5, y - Connection.HEIGHT + 4);
-		this.connections[1].pos = new Vector(x + 25 - Connection.WIDTH, y - Connection.HEIGHT + 4);
-		this.connections[2].pos = new Vector(x + 15 - Connection.WIDTH / 2, y + 30);
+		this.connections[0].pos = new Vector(this.pos.x, this.pos.y - Connection.HEIGHT);
 	}
 
 	@Override
 	public void draw(PApplet applet) {
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		applet.noStroke();
-		applet.fill(100);
-		applet.rect(x, y, 30, 15);
 		if (this.selected) { applet.stroke(255, 20, 20); }
 		else { applet.noStroke(); }
-		applet.line(x, y, x, y + 15);
-		applet.line(x + 30, y, x + 30, y + 15);
-		applet.arc(x + 15, y + 15, 30, 30, 0, PConstants.PI, PConstants.OPEN);
-		applet.fill(255);
-		applet.arc(x + 15, y - 4, 30, 30, (float)0.26, PConstants.PI - (float)0.26, PConstants.OPEN);
-		applet.noFill();
-		if (this.selected) { applet.stroke(255, 20, 20); }
-		else { applet.stroke(100); }
-		applet.strokeWeight(2);
-		applet.arc(x + 15, y - 5, 26, 26, (float)0.26, PConstants.PI - (float)0.26, PConstants.OPEN);
-		applet.strokeWeight(1);
-		applet.noStroke();
+		//draw code
 		for (Connection c: this.connections) {
 			c.draw(applet);
 		}
@@ -893,73 +520,61 @@ public class XorGate extends Component {
 
 	@Override
 	public void update() {
-		boolean output = HelperFunctions.XOR(this.connections[0].on, this.connections[1].on);
+		boolean output = this.connections[0].on; //replace with logic
 		for (Connection c: this.connections) {
 			c.off();
 		}
 		if (output) {
-			this.connections[2].on();
+			//set outputs
 		}
 	}
 
 	@Override
 	public boolean isMouseIntersecting(Vector pos, float zoom, Vector translate) {
-		float x = HelperFunctions.snap(this.pos.x);
-		float y = HelperFunctions.snap(this.pos.y);
-		x = translate.x + x * zoom;
-		y = translate.y + y * zoom;
+		float x = translate.x + this.pos.x * zoom;
+		float y = translate.y + this.pos.y * zoom;
+		//IDK i mean keep it if u like
 		return HelperFunctions.isInsideRect(pos.x, pos.y, x, y, 30 * zoom, 30 * zoom);
 	}
 	
 	@Override
 	public Component copy() {
-		Component c = new XorGate(this.pos.copy(), this.posInArray);
-		c.connections = this.connections;
+		//change class from ComponentTemplate
+		Component c = new ComponentTemplate(this.pos.copy(), this.posInArray, this.getUUID());
+		c.connections = this.connections; //TODO cannot copy connections (because wires) but they don't move with component
 		c.selected = this.selected;
 		return c;
 	}
 }
 
-package com.cospox.elecsim;
+package com.cospox.elecsim.util;
 
-import com.cospox.elecsim.util.Vector;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
-import processing.core.PApplet;
+import com.cospox.elecsim.components.Component;
 
-public class Connection {
-	public boolean on;
-	public Vector  pos;
-	public boolean selected;
-	public static int WIDTH  = 2;
-	public static int HEIGHT = 10;
-	public int posInComponents;
-	public int posInComponent;
-	public Connection(Vector pos, Vector posInArrays) {
-		this.pos = pos;
-		this.posInComponents = (int)posInArrays.x;
-		this.posInComponent  = (int)posInArrays.y;
+public class ComponentGenerator {
+	public static long currentUUID = 0;
+	
+	public static long nextUUID() {
+		return ComponentGenerator.currentUUID++;
 	}
-
-	public void draw(PApplet applet) {
-		if (this.selected) { applet.stroke(255, 20, 20); }
-		else { applet.noStroke(); }
-		if (this.on) { applet.fill(200);
-		} else { applet.fill(100); }
-		applet.rect(this.pos.x,
-				this.pos.y,
-				WIDTH, HEIGHT);
+	
+	public static Component generateNewComponent(String name, Vector pos, int posInArray, long uuid) {
+		try {
+			Constructor<?> ctor = Class.forName("com.cospox.elecsim.components." + name).getConstructor(Vector.class, int.class, long.class);
+			Object object = ctor.newInstance(new Object[] {pos, posInArray, uuid} );
+			return (Component)object;
+		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			e.printStackTrace();
+			Errors.error("Unknown/broken component '" + name + "'");
+			return null;
+		}
 	}
-
-	public void update() {
-
-	}
-
-	public void on() {
-		this.on = true;
-	}
-
-	public void off() {
-		this.on = false;
+	
+	public static Component generateNewComponent(String name, Vector pos, int posInArray) {
+		return ComponentGenerator.generateNewComponent(name, pos, posInArray, ComponentGenerator.nextUUID());
 	}
 }
 
@@ -984,8 +599,6 @@ public class Connection {
  *WE NEED A FUDGING SETTINGS MENU - Possibly consider second window, or even seperate library to make it look profesh.
  *
  *Add 'changes were made do u want to save pwese' on file open #16
- *Fix the damn and gate red outline! #18
- *failsafe for opening multiple save dialogs or similar 
  *When selecting component, first time does not show wire to mouse #11 NEEDS VERIFICATION VERIFIED, not just first time (snap to grid created issue)
  *In wire mode false, wire click detection is slightly off #19
  *Minor visual bug where sometimes the wrong/no connections outlined in red NEEDS VERIFICATION --sorta-verified
@@ -1067,6 +680,10 @@ public class Game {
 	public static String FONT_FAMILY = "SansSerif";
 	public static int FONT_SIZE = 12;
 	
+	public static float FONT_HEIGHT;
+	
+	private int framesSinceMouseMove = 0;
+	
 	public Game(PApplet applet) {
 		this.parent = applet;
 		this.hud = new hud(applet);
@@ -1075,6 +692,8 @@ public class Game {
 		
 		applet.textAlign(PConstants.LEFT, PConstants.TOP);
 		applet.textFont(Game.FONT);
+		
+		Game.FONT_HEIGHT = applet.textAscent() + applet.textDescent();
 		
 		try {
 			this.gameDataDir = new File(
@@ -1094,6 +713,7 @@ public class Game {
 		this.states.put("exitAfterSave", false);
 		this.states.put("halt", false);
 		this.states.put("draggingComponents", false);
+		this.states.put("dialogueOpen", false);
 		if (this.states.get("pathError") == null) {
 			this.states.put("pathError", false);
 		}
@@ -1170,6 +790,7 @@ public class Game {
 					adjusted_x < applet.width + 60 * this.zoom &&
 					adjusted_y > -60 * this.zoom &&
 					adjusted_y < applet.height + 60 * this.zoom) {
+				//applet.rotate((float) Math.toRadians(applet.frameCount / 5 % 360));
 				c.draw(applet);
 			}	
 		}
@@ -1196,6 +817,18 @@ public class Game {
 			applet.text("Cancel", applet.width / 2 + px - 8, applet.height / 2 + py + 52);
 			applet.textSize(12);
 		}
+		
+		if (applet.mouseX == applet.pmouseX && applet.mouseY == applet.pmouseY) {
+			this.framesSinceMouseMove += 1;
+			if (this.framesSinceMouseMove == 60) {
+				this.onMouseHover();
+			}
+		} else {
+			if (this.framesSinceMouseMove > 60) {
+				this.unMouseHover();
+			}
+			this.framesSinceMouseMove = 0;
+		}
 	}
 	
 	public boolean dispose() {
@@ -1208,6 +841,15 @@ public class Game {
 			this.promptToSave();
 			return false;
 		} else { return true; }
+	}
+	
+	public Component getComponentByUUID(long uuid) {
+		for (Component c: this.components) {
+			if (c.getUUID() == uuid) {
+				return c;
+			}
+		}
+		return null;
 	}
 	
 	public void setWireMode(boolean mode) {
@@ -1230,15 +872,22 @@ public class Game {
 	}
 	
 	public void saveAs() {
-		this.parent.selectOutput("Select file...", "saveAsCallback", null, this);
+		if (!this.states.get("dialogueOpen")) {
+			this.parent.selectOutput("Select file...", "saveAsCallback", null, this);
+			this.states.put("dialogueOpen", true);
+		}
 	}
 	
 	public void open() {
 		//TODO prompt to save
-		this.parent.selectInput("Select file...", "openFileCallback", null, this);
+		if (!this.states.get("dialogueOpen")) {
+			this.parent.selectInput("Select file...", "openFileCallback", null, this);
+			this.states.put("dialogueOpen", true);
+		}
 	}
 	
 	public void saveAsCallback(File selection) {
+		this.states.put("dialogueOpen", false);
 		if (selection == null) { return; }
 		String fileName = selection.getAbsoluteFile().toString();
 		this.saveToFile(fileName);
@@ -1250,6 +899,7 @@ public class Game {
 	}
 	
 	public void openFileCallback(File selection) {
+		this.states.put("dialogueOpen", false);
 		if (selection == null) { return; }
 		String fileName = selection.getAbsoluteFile().toString();
 		this.states.put("halt", true);
@@ -1356,7 +1006,7 @@ public class Game {
 			if (line == "") { continue; }
 			switch (line.split("\\(")[0]) {
 			case "Wire":
-				this.wires.add(ComponentEncoder.unpackWireCall(line, this.components));
+				this.wires.add(ComponentEncoder.unpackWireCall(line, this));
 				break;
 			default:
 				this.components.add(ComponentEncoder.unpackComponentCall(line, this.components));
@@ -1642,6 +1292,14 @@ public class Game {
 
 		this.componentInteraction(applet);
 	}
+	
+	public void onMouseHover() {
+		System.out.println("hovered");
+	}
+	
+	public void unMouseHover() {
+		System.out.println("unhovered");
+	}
 
 	public void mouseDragged(MouseEvent event, PApplet applet) {
 		//if it's the right click button then pan
@@ -1713,6 +1371,7 @@ public class Game {
 		if (this.keys.ctrl() && !this.keys.shift() && this.keys.get(78)) { this.newFile(); }				//ctrl+n = new
 		
 		if (this.keys.get('b')) { this.breakFunc(); } //break on demand
+		//if (this.keys.get('g')) { this.components.get(0).rotate(15); }
 		//if (this.keys.get('r')) { this.addNewComponent("AT28C256", new Vector()); }
 		
 		if (this.keys.get('y') && !this.keys.shift() && !this.keys.ctrl()) {								//y = switch wire mode
@@ -1763,100 +1422,12 @@ public class Game {
 	}
 }
 
-package com.cospox.elecsim;
-
-import com.cospox.elecsim.util.Global;
-import com.cospox.elecsim.util.HelperFunctions;
-
-import processing.core.PApplet;
-import processing.event.MouseEvent;
-
-public class Main extends PApplet{
-	public Game game;
-	public static void main(String[] args) {
-		PApplet.main("com.cospox.elecsim.Main");
-	}
-
-	@Override
-	public void settings() {
-		//int offset = 50;
-		//int h = 720 - offset;
-		this.size(480, 640, P2D);
-	}
-
-	@Override
-	public void setup() {
-		this.frameRate(60);
-		surface.setResizable(true);
-		this.game = new Game(this);
-	}
-
-	@Override
-	public void draw() {
-		this.game.draw(this);
-		if (Global.debug) {
-			
-			this.fill(255, 0, 0);
-			this.text(this.frameRate, 2, 38);
-			Runtime rt = Runtime.getRuntime();
-			double usedMiB = HelperFunctions.round((rt.totalMemory() - rt.freeMemory()) / 1024.0 / 1024.0, 3);
-			double totalMiB = HelperFunctions.round(rt.totalMemory() / 1024.0 / 1024.0, 3);
-			this.text(Double.toString(usedMiB) + "/" + Double.toString(totalMiB), 2, 50);
-			this.fill(255);
-		}
-	}
-
-	@Override
-	public void mouseClicked() {
-		this.game.mouseClicked(this);
-	}
-
-	@Override
-	public void keyPressed() {
-		//println("'" + key + "' " + keyCode);
-		this.game.keyPressed(this.key, this.keyCode);
-	}
-	@Override
-	public void keyReleased() {
-		this.game.keyReleased(this.key, this.keyCode);
-	}
-
-	@Override
-	public void mouseWheel(MouseEvent event) {
-		this.game.mouseWheel(event, this);
-	}
-
-	@Override
-	public void mouseDragged(MouseEvent event) {
-		this.game.mouseDragged(event, this);
-	}
-	
-	@Override
-	public void mousePressed() {
-		this.game.mousePressed(this);
-	}
-	
-	@Override
-	public void mouseReleased() {
-		this.game.mouseReleased(this);
-	}
-	
-	@Override
-	public void exit() {
-		if (this.game.dispose()) {
-			super.exit();
-		}
-	}
-}
-
 package com.cospox.elecsim.ui;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.cospox.elecsim.Game;
 import com.cospox.elecsim.util.Global;
-import com.cospox.elecsim.util.HelperFunctions;
 import com.cospox.elecsim.util.Vector;
 
 import processing.core.PApplet;
@@ -1868,12 +1439,13 @@ public class hud {
 	private Vector mouseStart = new Vector();
 	public boolean canSelect = false;
 	private boolean[] buttonsPressed = new boolean[10];
+	protected static int categoriesOpen = 0;
 	
 	private static PApplet parent;
 	
 	private final static int PADDING_FACTOR = 4;
+	protected final static int IMAGE_WIDTH = 32;
 	
-	private static ArrayList<String> buttons = new ArrayList<String>();
 	private static HashMap<String, HUDCategory> categories = new HashMap<String, HUDCategory>();
 	
 	public hud(PApplet applet) {
@@ -1932,13 +1504,6 @@ public class hud {
 			applet.line(applet.width - 20, 65, applet.width - 5, 65);
 			applet.line(applet.width - 5, 65, applet.width - 5, 75);
 		} else { applet.line(applet.width - 20, 65, applet.width - 5, 75); }
-
-		//Add new components
-		int index = 0;
-		for (String name: hud.buttons) {
-			applet.image(hud.images.get(name), 4 + 32 * index, applet.height - 32);
-			index++;
-		}
 		
 		if (Global.debug) {
 			this.drawDebug(applet);
@@ -2057,9 +1622,17 @@ public class hud {
 	}
 
 	public void mouseClicked(PApplet applet, Game game) {
+		int categoriesOpen = 0;
 		for (HUDCategory h: hud.categories.values()) {
-			h.mouseClicked(new Vector(applet.mouseX, applet.mouseY), new Vector(applet.width, applet.height), game);
+			boolean open = h.mouseClicked(
+					new Vector(applet.mouseX, applet.mouseY),
+					new Vector(applet.width,  applet.height), game);
+			
+			if (open) {
+				categoriesOpen++;
+			}
 		}
+		hud.categoriesOpen = categoriesOpen;
 		
 		if (applet.mouseX >= applet.width - 20 && applet.mouseY <= 40 && applet.mouseY >= 20) {
 			game.switchSelectedTool();
@@ -2068,45 +1641,120 @@ public class hud {
 			game.setWireMode(!game.getWireMode());
 		}
 		
-		//Add new components
-		int index = 0;
-		for (String name: hud.buttons) {
-			if (HelperFunctions.isInsideRect(applet.mouseX, applet.mouseY, 4 + 32 * index, applet.height - 32, 32, 32)) {
-				game.selectedComponent = name;
+		hud.NUM_COMPONENTS = hud.categories.size();
+		for (HUDCategory c: hud.categories.values()) {
+			if (c.buttons.size() > hud.NUM_COMPONENTS) {
+				hud.NUM_COMPONENTS = c.buttons.size();
 			}
-			index++;
 		}
 	}
 
 	public boolean isInsideHUDArea(Vector pos, Vector winSize) {
 		if (pos.x >= 0 && pos.x < 204 && pos.y >= 0 && pos.y < 14) { return true; } //top-left menu
 		if (pos.x >= winSize.x - 30 && pos.y <= 80) { return true; } //top right menu
-		if (pos.x < 4 + 32 * NUM_COMPONENTS && pos.x >= 0 && pos.y >= winSize.y - 32 && pos.y <= winSize.y) { return true; } //bottom left menu
+		if (pos.x < 4 + 32 * NUM_COMPONENTS &&
+			pos.x >= 0 &&
+			pos.y >= winSize.y - 32 * (hud.categoriesOpen + 2) &&
+			pos.y <= winSize.y) { return true; } //bottom left menu
 		return false;
 	}
 	
 	public static void addNewComponentCategory(String name, String iconName) {
-		hud.categories.put(name, new HUDCategory(hud.images.get(iconName), 4 + 32 * NUM_COMPONENTS));
-		hud.NUM_COMPONENTS++;
+		hud.categories.put(iconName, new HUDCategory(hud.images.get(iconName), 4 + hud.IMAGE_WIDTH * hud.categories.size(), name));
 	}
 
 	public static void addNewComponentButton(String name, String categoryName) {
-		if (categoryName != null) {
-			hud.categories.get(categoryName).addButton(new HUDButton(name, hud.images.get(name)));
-		} else {
-			//hud.buttons.add(new HUDButton(name, hud.images.get(name)));
-			hud.NUM_COMPONENTS++;
+		hud.categories.get(categoryName).addButton(new HUDButton(name, hud.images.get(name)));
+	}
+	
+	public static int allocateY() {
+		int x = -1;
+		for (HUDCategory c: hud.categories.values()) {
+			if (c.y > x) {
+				x = c.y;
+			}
+		}
+		return x + 1;
+	}
+	
+	public static void free(int y) {
+		for (HUDCategory c: hud.categories.values()) {
+			if (c.y >= y) {
+				c.y -= 1;
+			}
+		}
+	}
+}
+
+package com.cospox.elecsim.ui;
+
+import java.util.ArrayList;
+
+import com.cospox.elecsim.Game;
+import com.cospox.elecsim.util.HelperFunctions;
+import com.cospox.elecsim.util.Vector;
+
+import processing.core.PApplet;
+import processing.core.PImage;
+
+public class HUDCategory {
+	private PImage icon;
+	private float x;
+	protected int y;
+	public boolean shown = false;
+	private int numButtons = 0;
+	private int PADDING = 3;
+	private String displayName;
+	protected ArrayList<HUDButton> buttons = new ArrayList<HUDButton>();
+	public HUDCategory(PImage icon, float x, String displayName) {
+		this.icon = icon;
+		this.x = x;
+		this.displayName = displayName;
+	}
+	
+	public void draw(PApplet applet) {
+		applet.image(this.icon, this.x, applet.height - hud.IMAGE_WIDTH);
+		applet.text(this.displayName, this.x + (hud.IMAGE_WIDTH - applet.textWidth(this.displayName)) / 2, applet.height - 32 - Game.FONT_HEIGHT - PADDING);
+		if (this.shown) {
+			float y = applet.height - hud.IMAGE_WIDTH - hud.IMAGE_WIDTH * (this.y) - Game.FONT_HEIGHT - PADDING;
+			for (HUDButton b: this.buttons) {
+				b.draw(applet, y);
+			}
 		}
 	}
 	
-	public static void addNewComponentButton(String name) {
-		hud.buttons.add(name);
-		hud.NUM_COMPONENTS++;
+	public void addButton(HUDButton button) {
+		this.buttons.add(button);
+		button.setPos(4 + hud.IMAGE_WIDTH * this.numButtons);
+		this.numButtons++;
 	}
 	
-	
+	protected boolean mouseClicked(Vector pos, Vector screenSize, Game game) {
+		if (HelperFunctions.isInsideRect(pos.x, pos.y, this.x, screenSize.y - hud.IMAGE_WIDTH, hud.IMAGE_WIDTH, hud.IMAGE_WIDTH)) {
+			this.shown = !this.shown;
+			if (this.shown) {
+				this.y = hud.allocateY();
+			} else {
+				hud.free(this.y);
+			}
+		}
+		
+		if (!this.shown) { return this.shown; }
+		System.out.println((screenSize.y - (this.y + 1) * hud.IMAGE_WIDTH) + " " + (screenSize.y - hud.IMAGE_WIDTH * this.y));
+		System.out.print(pos.y);
+		//float y = screenSize.y - hud.IMAGE_WIDTH - hud.IMAGE_WIDTH * (this.y) - Game.FONT_HEIGHT - PADDING;
+		if (pos.y >= screenSize.y - (this.y + 1) * hud.IMAGE_WIDTH - PADDING - Game.FONT_HEIGHT &&
+			pos.y <= screenSize.y - hud.IMAGE_WIDTH * this.y - PADDING - Game.FONT_HEIGHT) {
+			for (HUDButton b: this.buttons) {
+				if (pos.x >= b.x && pos.x <= b.x + hud.IMAGE_WIDTH) {
+					//mouse was over b
+					game.selectedComponent = b.name;
+				}
+			}
+		}
+		return this.shown;
+	}
 }
-
 package com.cospox.elecsim.ui;
 
 import processing.core.PApplet;
@@ -2125,562 +1773,10 @@ public class HUDButton {
 		this.x = x;
 	}
 	
-	public void draw(PApplet applet) {
-		applet.image(this.icon, x, applet.height - 64);
+	public void draw(PApplet applet, float y) {
+		applet.image(this.icon, x, y);
 	}
 
-}
-
-package com.cospox.elecsim.ui;
-
-import java.util.ArrayList;
-
-import com.cospox.elecsim.Game;
-import com.cospox.elecsim.util.HelperFunctions;
-import com.cospox.elecsim.util.Vector;
-
-import processing.core.PApplet;
-import processing.core.PImage;
-
-public class HUDCategory {
-	private PImage icon;
-	private float x;
-	public boolean shown = false;
-	private int numButtons = 0;
-	private ArrayList<HUDButton> buttons = new ArrayList<HUDButton>();
-	public HUDCategory(PImage icon, float x) {
-		this.icon = icon;
-		this.x = x;
-	}
-	
-	public void draw(PApplet applet) {
-		applet.image(this.icon, this.x, applet.height - 32);
-		if (this.shown) {
-			for (HUDButton b: this.buttons) {
-				b.draw(applet);
-			}
-		}
-	}
-	
-	public void addButton(HUDButton button) {
-		this.buttons.add(button);
-		button.setPos(4 + 32 * this.numButtons);
-		this.numButtons++;
-	}
-	
-	protected void mouseClicked(Vector pos, Vector screenSize, Game game) {
-		int ROWS = 2;
-		int COLS = hud.NUM_COMPONENTS;
-		if (HelperFunctions.isInsideRect(pos.x, pos.y, this.x, screenSize.y - 32, 32, 32)) {
-			this.shown = !this.shown;
-		} else if (HelperFunctions.isInsideRect(pos.x, pos.y, 0, screenSize.y - 32 * ROWS, COLS, 32 * ROWS)){
-			this.shown = false;
-		}
-		if (!this.shown) { return; }
-		if (pos.y >= screenSize.y - 64 && pos.y <= screenSize.y - 32) {
-			for (HUDButton b: this.buttons) {
-				if (pos.x >= b.x && pos.x <= b.x + 32) {
-					//mouse was over b
-					game.selectedComponent = b.name;
-				}
-			}
-		}
-	}
-}
-package com.cospox.elecsim.util;
-
-import java.util.ArrayList;
-
-import com.cospox.elecsim.Wire;
-import com.cospox.elecsim.components.Component;
-
-public class ComponentEncoder {
-	public static Wire unpackWireCall(String call, ArrayList<Component> components) {
-		//convert 'Wire(args)' into needed info to construct a Wire object
-		String data = call.replace("Wire(", "").replace(")", "");
-		String s = data.split(",")[0].replace("[", "").replace("]", "");
-		String e = data.split(",")[1].replace("[", "").replace("]", "");
-		Vector spos = new Vector(Integer.parseInt(s.split(" ")[0]),
-								 Integer.parseInt(s.split(" ")[1]));
-		Vector epos = new Vector(Integer.parseInt(e.split(" ")[0]),
-				 				 Integer.parseInt(e.split(" ")[1]));
-		return new Wire(components.get((int)spos.x).connections[(int)spos.y],
-								components.get((int)epos.x).connections[(int)epos.y],
-								components.get((int)spos.x),
-								components.get((int)epos.x));
-	}
-	
-	public static Component unpackComponentCall(String call, ArrayList<Component> components) {
-		//convert 'Component(args)' into needed data to reconstruct a Component object
-		String vectorCall = call.split("\\(")[2].split("\\)")[0];
-		String type = call.split("\\(")[0];
-		float x = Float.parseFloat(vectorCall.split(",")[0].replace(" ", ""));
-		float y = Float.parseFloat(vectorCall.split(",")[1].replace(" ", ""));
-		return ComponentGenerator.generateNewComponent(type, new Vector(x, y), components.size());
-	}
-	
-	public static String componentToString(Component c) {
-		String out = "";
-		out += c.getClass().getSimpleName() + "(";
-		out += c.pos.toString();
-		out += ");";
-		return out;
-	}
-	
-	public static String wireToString(Wire w) {
-		String out = "";
-		out += "Wire(";
-		out += "[" + w.getPosition(w.s) + "],";
-		out += "[" + w.getPosition(w.e) + "]);";
-		return out;
-	}
-}
-
-package com.cospox.elecsim.util;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-
-import com.cospox.elecsim.components.Component;
-
-public class ComponentGenerator {
-	public static Component generateNewComponent(String name, Vector pos, int posInArray) {
-		try {
-			Constructor<?> ctor = Class.forName("com.cospox.elecsim.components." + name).getConstructor(Vector.class, int.class);
-			Object object = ctor.newInstance(new Object[] {pos, posInArray} );
-			return (Component)object;
-		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-			e.printStackTrace();
-			Errors.error("Unknown/broken component '" + name + "'");
-			return null;
-		}
-		
-//		switch (name) {
-//		//Add new components
-//		case "Switch":
-//			return new Switch(pos, posInArray);
-//		case "AndGate":
-//			return new AndGate(pos, posInArray);
-//		case "OrGate":
-//			return new OrGate(pos, posInArray);
-//		case "XorGate":
-//			return new XorGate(pos, posInArray);
-//		case "NotGate":
-//			return new NotGate(pos, posInArray);
-//		case "Joint":
-//			return new Joint(pos, posInArray);
-//		case "HighSource":
-//			return new HighSource(pos, posInArray);
-//		case "LowSource":
-//			return new LowSource(pos, posInArray);
-//		case "AT28C256":
-//			return new AT28C256(pos, posInArray);
-//		default:
-//			Errors.error("Unknown component '" + name + "'");
-//			return null;
-//		}
-	}
-}
-
-package com.cospox.elecsim.util;
-
-import com.cospox.elecsim.Connection;
-import com.cospox.elecsim.components.Component;
-
-import processing.core.PApplet;
-
-public class ComponentTemplate extends Component {
-	public ComponentTemplate(Vector pos, int posInArray) {
-		super(pos, posInArray);
-		this.connections = new Connection[1];
-		this.connections[0] = new Connection(new Vector(this.pos.x, this.pos.y - Connection.HEIGHT),
-											 new Vector(posInArray, 0)); //input A
-	}
-	
-	@Override
-	public void updateConnectionsPos() {
-		this.connections[0].pos = new Vector(this.pos.x, this.pos.y - Connection.HEIGHT);
-	}
-
-	@Override
-	public void draw(PApplet applet) {
-		if (this.selected) { applet.stroke(255, 20, 20); }
-		else { applet.noStroke(); }
-		//draw code
-		for (Connection c: this.connections) {
-			c.draw(applet);
-		}
-	}
-
-	@Override
-	public void update() {
-		boolean output = this.connections[0].on; //replace with logic
-		for (Connection c: this.connections) {
-			c.off();
-		}
-		if (output) {
-			//set outputs
-		}
-	}
-
-	@Override
-	public boolean isMouseIntersecting(Vector pos, float zoom, Vector translate) {
-		float x = translate.x + this.pos.x * zoom;
-		float y = translate.y + this.pos.y * zoom;
-		//IDK i mean keep it if u like
-		return HelperFunctions.isInsideRect(pos.x, pos.y, x, y, 30 * zoom, 30 * zoom);
-	}
-	
-	@Override
-	public Component copy() {
-		//change class from ComponentTemplate
-		Component c = new ComponentTemplate(this.pos.copy(), this.posInArray);
-		c.connections = this.connections; //TODO cannot copy connections (because wires) but they don't move with component
-		c.selected = this.selected;
-		return c;
-	}
-}
-
-package com.cospox.elecsim.util;
-
-public class Errors {
-	public static void error(String message) {
-		System.out.println(message);
-	}
-}
-
-package com.cospox.elecsim.util;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-
-public class FileHandler {
-	public static void write(String fileName, String file) {
-		FileWriter out = null;
-		try {
-			out = new FileWriter(fileName);
-			out.write(file);
-			out.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			if (out != null) {
-				try {
-					out.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
-	
-	public static String read(String filename) {
-		BufferedReader reader = null;
-		String out = "";
-		try {
-			String line = null;
-			reader = new BufferedReader(new FileReader(filename));
-			while ((line = reader.readLine()) != null) {
-				out += line;
-			}
-		} catch (IOException e) {
-			
-		} finally {
-			if (reader != null) {
-				try {
-					reader.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-					//TODO AAAHHHH HELP
-				}
-			}
-		}
-		return out;
-	}
-
-	public static boolean fileExists(String string) {
-		File f = new File(string);
-		return (f.exists() && !f.isDirectory());
-	}
-}
-
-package com.cospox.elecsim.util;
-
-public class Global {
-	public static final boolean debug = false;
-}
-
-package com.cospox.elecsim.util;
-
-import processing.core.PApplet;
-
-public class HelperFunctions {
-	public static boolean isInsideRect(int x, int y, int rx, int ry, int rw, int rh) {
-		if (x >= rx && y >= ry) {
-			if (x <= rx + rw && y <= ry + rh) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public static boolean isInsideRect(float x, float y, float rx, float ry, float rw, float rh) {
-		if (x >= rx && y >= ry) {
-			if (x <= rx + rw && y <= ry + rh) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public static boolean isPointOnLine(Vector a, Vector b, Vector c, float threshhold) {
-		double top = Math.abs((c.y - a.y) * b.x
-							- (c.x - a.x) * b.y
-						 	+ c.x * a.y - c.y * a.x);
-		
-		double bottom = Math.sqrt(Math.pow(c.y - a.y, 2)
-				                + Math.pow(c.x - a.x, 2));
-		
-		double dist = top / bottom;
-		
-		//if (a.x == c.x) { 
-		//	System.out.println(a.toString() + b.toString() + c.toString());
-		//	return true; 
-		//} 
-		if (!(dist < threshhold)) { return false; }
-		if (b.x < c.x) { return false; }
-		if (b.y > (a.y >= c.y ? a : c).y) { return false; }
-		return true;
-	}
-
-	public static double gradient(Vector x, Vector y) {
-		return (y.y - x.y) / (y.x - x.x);
-	}
-
-	public static double round(double value, int places) {
-		if (places < 0) { throw new IllegalArgumentException(); }
-		long factor = (long) Math.pow(10, places);
-		value *= factor;
-		long tmp = Math.round(value);
-		return (double) tmp / factor;
-	}
-
-	public static boolean isInsideCircle(Vector point, Vector centre, float radius) {
-		if (PApplet.dist(point.x, point.y, centre.x, centre.y) <= radius) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	public static boolean isInsideTriangle(Vector s, Vector a, Vector b, Vector c) {
-		float as_x = s.x - a.x;
-		float as_y = s.y - a.y;
-		boolean s_ab = (b.x - a.x) * as_y - (b.y - a.y) * as_x > 0;
-		if ((c.x - a.x) * as_y - (c.y - a.y) * as_x > 0 == s_ab) { return false; }
-		if ((c.x - b.x) * (s.y - b.y) - (c.y - b.y) * (s.x - b.x) > 0 != s_ab) { return false; }
-		return true;
-	}
-
-	public static boolean XOR(boolean a, boolean b) {
-		if (a | b && !(a && b)) {
-			return true;
-		}
-		return false;
-	}
-	
-	public static float snap(float x) {
-		return Math.round(x / 7) * 7F;
-	}
-}
-package com.cospox.elecsim.util;
-
-import java.util.ArrayList;
-
-import com.cospox.elecsim.Wire;
-import com.cospox.elecsim.components.Component;
-
-public class HistorySave {
-	public ArrayList<Component> components = new ArrayList<Component>();
-	public ArrayList<Wire>      wires      = new ArrayList<Wire>();
-	
-	public HistorySave(ArrayList<Component> components, ArrayList<Wire> wires) {
-		for (Component c: components) {
-			this.components.add(c.copy());
-		}
-		for (Wire w: wires) {
-			this.wires.add(w.copy());
-		}
-	}
-}
-
-package com.cospox.elecsim.util;
-
-import java.util.HashMap;
-
-public class KeyHandler {
-	private HashMap<Integer, Boolean> keys = new HashMap<Integer, Boolean>();
-	private HashMap<Character, Boolean> keyChars = new HashMap<Character, Boolean>();
-	
-	public KeyHandler() {
-		for (int i = 0; i < 256; i++) { this.keys.put(i, false); }
-	}
-	public void pressed(int keyCode, char key) {
-		this.keys.put(keyCode, true);
-		this.keyChars.put(key, true);
-	}
-	public void released(int keyCode, char key) {
-		this.keys.put(keyCode, false);
-		this.keyChars.put(key, false);
-	}
-	
-	public boolean get(int keyCode) {
-		return this.keys.get(keyCode);
-	}
-	
-	public boolean get(char key) {
-		if (this.keyChars.containsKey(key)) {
-			return this.keyChars.get(key);
-		} else {
-			return false;
-		}
-	}
-	
-	public boolean shift() {
-		return this.keys.get(16);
-	}
-	public boolean ctrl() {
-		return this.keys.get(17);
-	}
-}
-
-package com.cospox.elecsim.util;
-
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import com.cospox.elecsim.components.Component;
-
-public final class OnLoadManager {
-
-    public static void doOnLoad() throws Exception {
-        for (Class<?> cls : getClasses(Component.class)) {
-        	try {
-            	Method onLoad = cls.getDeclaredMethod("onLoad");
-            	onLoad.setAccessible(true);
-            	onLoad.invoke(null);
-        	} catch (NoSuchMethodException e) {
-        		System.out.println("[WARNING] Class <" + cls.getName() + "> has no <onLoad> method");
-        	}
-        }
-    }
-
-    public static void doOnLoadPriority() throws Exception {
-        for (Class<?> cls : getClasses(Component.class)) {
-        	try {
-            	Method onLoad = cls.getDeclaredMethod("onLoadPriority");
-            	onLoad.setAccessible(true);
-            	onLoad.invoke(null);
-        	} catch (NoSuchMethodException e) {
-        		System.out.println("[WARNING] Class <" + cls.getName() + "> has no <onLoadPriority> method");
-        	}
-        }
-    }
-
-    private static List<Class<?>> getClasses(Class<?> caller)
-            throws IOException, URISyntaxException {
-
-        return Files.walk(getPackagePath(caller))
-                .filter(Files::isRegularFile)
-                .filter(file -> file.toString().endsWith(".class"))
-                .map(path -> mapPathToClass(path, caller.getPackage().getName()))
-                .collect(Collectors.toList());
-    }
-
-    private static Class<?> mapPathToClass(Path clsPath, String packageName) {
-        String className = clsPath.getFileName().toString();
-        className = className.substring(0, className.length() - 6);
-        return loadClass(packageName + "." + className);
-    }
-
-    private static Path getPackagePath(Class<?> caller)
-            throws IOException, URISyntaxException {
-        String packageName = createPackageName(caller);
-        Enumeration<URL> resources = caller.getClassLoader()
-                .getResources(packageName);
-        
-        URL element = resources.nextElement();
-        
-        if (element.toURI().toString().startsWith("file:")) {
-        	return Paths.get(element.toURI());
-        }
-        
-        final Map<String, String> env = new HashMap<>();
-        final String[] array = element.toURI().toString().split("!");
-        final FileSystem fs = FileSystems.newFileSystem(URI.create(array[0]), env);
-        final Path path = fs.getPath(array[1]);
-
-		return path;
-    }
-
-    private static String createPackageName(Class<?> caller) {
-        return caller.getPackage().getName().replace(".", "/");
-    }
-
-    private static Class<?> loadClass(String name) {
-        try {
-            return Class.forName(name);
-        } catch (ClassNotFoundException e) {
-            return null;
-        }
-    }
-}
-
-package com.cospox.elecsim.util;
-
-public class Vector {
-	public float x;
-	public float y;
-	public Vector() {
-		this.x = 0;
-		this.y = 0;
-	}
-	public Vector(float x, float y) {
-		this.x = x;
-		this.y = y;
-	}
-	@Override
-	public String toString() {
-		return "new Vector(" + Float.toString(this.x) + ", " + Float.toString(this.y) + ")";
-	}
-	public void set(float x, float y) {
-		this.x = x;
-		this.y = y;
-	}
-	public void set(int x, int y) {
-		this.x = x;
-		this.y = y;
-	}
-	
-	public Vector copy() {
-		return new Vector(this.x, this.y);
-	}
 }
 
 package com.cospox.elecsim;
@@ -2776,6 +1872,1174 @@ public class Wire {
 		n.wireMode = this.wireMode;
 		n.on = this.on;
 		return n;
+	}
+}
+
+package com.cospox.elecsim;
+
+import com.cospox.elecsim.util.Vector;
+
+import processing.core.PApplet;
+
+public class Connection {
+	public boolean on;
+	public Vector  pos;
+	public boolean selected;
+	public static int WIDTH  = 2;
+	public static int HEIGHT = 10;
+	public int posInComponents;
+	public int posInComponent;
+	public Connection(Vector pos, Vector posInArrays) {
+		this.pos = pos;
+		this.posInComponents = (int)posInArrays.x;
+		this.posInComponent  = (int)posInArrays.y;
+	}
+
+	public void draw(PApplet applet) {
+		if (this.selected) { applet.stroke(255, 20, 20); }
+		else { applet.noStroke(); }
+		if (this.on) { applet.fill(200);
+		} else { applet.fill(100); }
+		applet.rect(this.pos.x,
+				this.pos.y,
+				WIDTH, HEIGHT);
+	}
+
+	public void update() {
+
+	}
+
+	public void on() {
+		this.on = true;
+	}
+
+	public void off() {
+		this.on = false;
+	}
+}
+
+package com.cospox.elecsim.components;
+
+import com.cospox.elecsim.Connection;
+import com.cospox.elecsim.ui.hud;
+import com.cospox.elecsim.util.HelperFunctions;
+import com.cospox.elecsim.util.Vector;
+
+import processing.core.PApplet;
+import processing.core.PConstants;
+
+public class XorGate extends Component {
+	public XorGate(Vector pos, int posInArray, long uuid) {
+		super(pos, posInArray, uuid);
+		this.connections = new Connection[3];
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		this.connections[0] = new Connection(new Vector(x + 5, y - Connection.HEIGHT + 4),
+											 new Vector(posInArray, 0)); //input A
+		this.connections[1] = new Connection(new Vector(x + 25 - Connection.WIDTH, y - Connection.HEIGHT + 4),
+											 new Vector(posInArray, 1)); //input B
+		this.connections[2] = new Connection(new Vector(x + 15 - Connection.WIDTH / 2, y + 30),
+											 new Vector(posInArray, 2)); //output
+	}
+	
+	public static void onLoad() {
+		hud.addImage("XorGate");
+		hud.addNewComponentButton("XorGate", "BasicGates");
+	}
+	
+	@Override
+	public void updateConnectionsPos() {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		this.connections[0].pos = new Vector(x + 5, y - Connection.HEIGHT + 4);
+		this.connections[1].pos = new Vector(x + 25 - Connection.WIDTH, y - Connection.HEIGHT + 4);
+		this.connections[2].pos = new Vector(x + 15 - Connection.WIDTH / 2, y + 30);
+	}
+
+	@Override
+	public void draw(PApplet applet) {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		applet.noStroke();
+		applet.fill(100);
+		applet.rect(x, y, 30, 15);
+		if (this.selected) { applet.stroke(255, 20, 20); }
+		else { applet.noStroke(); }
+		applet.line(x, y, x, y + 15);
+		applet.line(x + 30, y, x + 30, y + 15);
+		applet.arc(x + 15, y + 15, 30, 30, 0, PConstants.PI, PConstants.OPEN);
+		applet.fill(255);
+		applet.arc(x + 15, y - 4, 30, 30, (float)0.26, PConstants.PI - (float)0.26, PConstants.OPEN);
+		applet.noFill();
+		if (this.selected) { applet.stroke(255, 20, 20); }
+		else { applet.stroke(100); }
+		applet.strokeWeight(2);
+		applet.arc(x + 15, y - 5, 26, 26, (float)0.26, PConstants.PI - (float)0.26, PConstants.OPEN);
+		applet.strokeWeight(1);
+		applet.noStroke();
+		for (Connection c: this.connections) {
+			c.draw(applet);
+		}
+	}
+
+	@Override
+	public void update() {
+		boolean output = HelperFunctions.XOR(this.connections[0].on, this.connections[1].on);
+		for (Connection c: this.connections) {
+			c.off();
+		}
+		if (output) {
+			this.connections[2].on();
+		}
+	}
+
+	@Override
+	public boolean isMouseIntersecting(Vector pos, float zoom, Vector translate) {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		x = translate.x + x * zoom;
+		y = translate.y + y * zoom;
+		return HelperFunctions.isInsideRect(pos.x, pos.y, x, y, 30 * zoom, 30 * zoom);
+	}
+	
+	@Override
+	public Component copy() {
+		Component c = new XorGate(this.pos.copy(), this.posInArray, this.getUUID());
+		c.connections = this.connections;
+		c.selected = this.selected;
+		return c;
+	}
+}
+
+package com.cospox.elecsim.components;
+
+import com.cospox.elecsim.Connection;
+import com.cospox.elecsim.ui.hud;
+import com.cospox.elecsim.util.HelperFunctions;
+import com.cospox.elecsim.util.Vector;
+
+import processing.core.PApplet;
+
+public class LowSource extends Component {
+	public LowSource(Vector pos, int posInArray, long uuid) {
+		super(pos, posInArray, uuid);
+		this.connections = new Connection[1];
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		this.connections[0] = new Connection(new Vector(x + 15 - Connection.WIDTH / 2.0F, y + 20),
+											 new Vector(posInArray, 0)); //output
+	}
+	
+	@Override
+	public void updateConnectionsPos() {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		this.connections[0].pos = new Vector(x + 15 - Connection.WIDTH / 2.0F, y + 20);
+	}
+
+	@Override
+	public void draw(PApplet applet) {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		if (this.selected) { applet.stroke(255, 20, 20); }
+		else { applet.noStroke(); }
+		
+		float T_HEIGHT = applet.textAscent() + applet.textDescent();
+		
+		applet.fill(100);
+		applet.rect(x, y, 30, 20);
+		applet.fill(20);
+		applet.text("0", x + 12, y + T_HEIGHT - 12);
+		for (Connection c: this.connections) {
+			c.draw(applet);
+		}
+	}
+
+	@Override
+	public void update() {
+		this.connections[0].off();
+	}
+
+	@Override
+	public boolean isMouseIntersecting(Vector pos, float zoom, Vector translate) {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		x = translate.x + this.pos.x * zoom;
+		y = translate.y + this.pos.y * zoom;
+		return HelperFunctions.isInsideRect(pos.x, pos.y, x, y, 30 * zoom, 20 * zoom);
+	}
+	
+	@Override
+	public Component copy() {
+		//change class from ComponentTemplate
+		Component c = new LowSource(this.pos.copy(), this.posInArray, this.getUUID());
+		c.connections = this.connections; //TODO cannot copy connections (because wires) but they don't move with component
+		c.selected = this.selected;
+		return c;
+	}
+	
+	public static void onLoad() {
+		hud.addImage("LowSource");
+		hud.addNewComponentButton("LowSource", "IO");
+	}
+}
+
+package com.cospox.elecsim.components;
+
+import com.cospox.elecsim.Connection;
+import com.cospox.elecsim.ui.hud;
+import com.cospox.elecsim.util.HelperFunctions;
+import com.cospox.elecsim.util.Vector;
+
+import processing.core.PApplet;
+import processing.core.PConstants;
+
+public class NAndGate extends Component {
+	//public boolean first = true;
+	public NAndGate(Vector pos, int posInArray, long uuid) {
+		super(pos, posInArray, uuid);
+		this.connections = new Connection[3];
+		
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		
+		this.connections[0] = new Connection(new Vector(x, y - Connection.HEIGHT),
+											 new Vector(posInArray, 0)); //input A
+		this.connections[1] = new Connection(new Vector(x + 30 - Connection.WIDTH, y - Connection.HEIGHT),
+											 new Vector(posInArray, 1)); //input B
+		this.connections[2] = new Connection(new Vector(x + 15 - Connection.WIDTH / 2, y + 30),
+											 new Vector(posInArray, 2)); //output
+	}
+	
+	//run when the application loads
+	public static void onLoad() {
+		hud.addImage("NAndGate");
+		hud.addNewComponentButton("NAndGate", "BasicGates");
+	}
+	
+	@Override
+	public void updateConnectionsPos() {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		this.connections[0].pos = new Vector(x, y - Connection.HEIGHT);
+		this.connections[1].pos = new Vector(x + 30 - Connection.WIDTH, y - Connection.HEIGHT);
+		this.connections[2].pos = new Vector(x + 15 - Connection.WIDTH / 2, y + 30);
+	}
+
+	@Override
+	public void draw(PApplet applet) {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		int SIZE = 30;
+		/*
+		if (first) {
+			first = false;
+			this.shape = applet.createShape(PConstants.GROUP);
+			this.shape.setFill(applet.color(100));
+			this.shape.setStroke(false);
+			this.shape.addChild(applet.createShape(PConstants.RECT, 0, 0, SIZE, SIZE / 2));
+			this.shape.addChild(applet.createShape(PConstants.ARC, SIZE / 2, SIZE / 2, SIZE, SIZE, 0, PConstants.PI));
+			
+			if (this.selected) {
+				this.shape.setStroke(applet.color(255, 20, 20));
+				this.shape.addChild(applet.createShape(PConstants.LINE, 0, 0, SIZE, 0));
+				this.shape.addChild(applet.createShape(PConstants.LINE, 0, 0, 0, SIZE / 2));
+				this.shape.addChild(applet.createShape(PConstants.LINE, SIZE, 0, SIZE, SIZE / 2));
+
+				this.shape.setFill(false);
+				this.shape.addChild(applet.createShape(PConstants.ARC, SIZE / 2, SIZE / 2, SIZE, SIZE, 0, PConstants.PI));
+			}
+		}
+		PGraphics graphics = applet.createGraphics(50, 50, PConstants.P2D);
+		graphics.beginDraw();
+		graphics.rotate((float)Math.toRadians(this.rotationDegrees));
+		graphics.background(255);
+		graphics.noStroke();
+		graphics.fill(100);
+		graphics.rect(0, 0, SIZE, SIZE / 2);
+		graphics.arc(SIZE / 2, SIZE / 2, SIZE, SIZE, 0, PConstants.PI);
+		
+		if (this.selected) { graphics.stroke(255, 20, 20); }
+		graphics.line(0, 0, SIZE, 0);
+		graphics.line(0, 0, 0, SIZE / 2);
+		graphics.line(SIZE, 0, SIZE, SIZE / 2);
+		graphics.noFill();
+		graphics.arc(SIZE / 2, SIZE / 2, SIZE, SIZE, 0, PConstants.PI);
+		graphics.endDraw();
+		applet.image(graphics, x, y);
+		*/
+		applet.noStroke();
+		applet.fill(100);
+		applet.rect(x, y, SIZE, SIZE / 2);
+		applet.arc(x + SIZE / 2, y + SIZE / 2, SIZE, SIZE, 0, PConstants.PI);
+		applet.circle(x + SIZE / 2, y + SIZE, 5);
+		
+		if (this.selected) { applet.stroke(255, 20, 20); }
+		applet.line(x, y, x + SIZE, y);
+		applet.line(x, y, x, y + SIZE / 2);
+		applet.line(x + SIZE, y, x + SIZE, y + SIZE / 2);
+		applet.noFill();
+		applet.arc(x + SIZE / 2, y + SIZE / 2, SIZE, SIZE, 0, PConstants.PI);
+		//this.shape.rotate((float)Math.toRadians(this.rotationDegrees));
+		//applet.shape(this.shape, x, y);
+		for (Connection c: this.connections) {
+			c.draw(applet);
+		}
+	}
+	
+//	@Override
+//	public void rotate(int degrees) {
+//		this.shape.rotate((float) Math.toRadians(degrees));
+//	}
+
+	@Override
+	public void update() {
+		boolean output = !(this.connections[0].on && this.connections[1].on);
+		for (Connection c: this.connections) {
+			c.off();
+		}
+		if (output) {
+			this.connections[2].on();
+		}
+	}
+
+	@Override
+	public boolean isMouseIntersecting(Vector pos, float zoom, Vector translate) {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		x = translate.x + x * zoom;
+		y = translate.y + y * zoom;
+		return HelperFunctions.isInsideRect(pos.x, pos.y, x, y, 30 * zoom, 30 * zoom);
+	}
+	
+	@Override
+	public Component copy() {
+		Component c = new NAndGate(this.pos.copy(), this.posInArray, this.getUUID());
+		c.connections = this.connections; //TODO cannot copy connections (because wires) but they don't move with component
+		c.selected = this.selected;
+		return c;
+	}
+}
+
+package com.cospox.elecsim.components;
+
+import com.cospox.elecsim.Connection;
+import com.cospox.elecsim.ui.hud;
+import com.cospox.elecsim.util.Vector;
+
+public class AT28C256 extends IC {
+	
+	private byte[] memory = new byte[32768];
+	
+	private final static int[] IO_PINS = new int[]{18, 17, 16, 15, 14, 12, 11, 10};
+	private final static int[] ADDR_PINS = new int[]{0, 25, 1, 22, 20, 23, 24, 2, 3, 4, 5, 6, 7, 8, 9};
+	
+	private boolean previousWE;
+	private boolean previousCE;
+	
+	public AT28C256(Vector pos, int posInArray) {
+		super(pos, 28, posInArray);
+
+	}
+	
+	@Override
+	public void update() {
+		boolean we = this.connections[26].on;
+		boolean oe = this.connections[21].on;
+		boolean ce = this.connections[19].on;
+		
+		boolean[] output = new boolean[this.numPins];
+		
+		if (((we && ce && !this.previousWE) || (we && ce && !this.previousCE)) && !oe) {
+			//rising edge of either WE or CE, with the other one high
+			int address = 0;
+			for (int pin: ADDR_PINS) {
+				address = address << 1 | (this.connections[pin].on ? 1 : 0);
+			}
+			byte data = 0;
+			for (int pin: IO_PINS) {
+				data = (byte)(data << 1 | (this.connections[pin].on ? 1 : 0));
+			}
+			this.memory[address] = data;
+			
+		}
+		
+		if (oe && ce && !we) {
+			int address = 0;
+			for (int pin: ADDR_PINS) {
+				address = address << 1 | (this.connections[pin].on ? 1 : 0);
+			}
+			byte data = this.memory[address];
+			for (int i = 0; i < 8; i++) {
+				boolean bit = ((data >> i) & 0x1) == 0 ? false : true;
+				if (bit) {
+					output[IO_PINS[7 - i]] = true;
+				} else {
+					output[IO_PINS[7 - i]] = false;
+				}
+			}
+		}
+		
+		for (int i = 0; i < this.connections.length; i++) {
+			Connection c = this.connections[i];
+			boolean x    = output[i];
+			if (x) {
+				c.on();
+			} else {
+				c.off();
+			}
+		}
+		
+		this.previousWE = we;
+		this.previousCE = ce;
+	}
+	
+	public static void onLoad() {
+		hud.addImage("AT28C256");
+		hud.addNewComponentButton("AT28C256", "ICs");
+	}
+}
+
+package com.cospox.elecsim.components;
+
+import com.cospox.elecsim.Connection;
+import com.cospox.elecsim.ui.hud;
+import com.cospox.elecsim.util.HelperFunctions;
+import com.cospox.elecsim.util.Vector;
+
+import processing.core.PApplet;
+
+public class Switch extends Component {
+	public boolean on = false;
+	public int radius = 15;
+
+	public Switch(Vector pos, int posInArray, long uuid) {
+		super(pos, posInArray, uuid);
+		this.connections = new Connection[1];
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		this.connections[0] = new Connection(new Vector(x, y + this.radius),
+											 new Vector(posInArray, 0));
+	}
+	
+	@Override
+	public void updateConnectionsPos() {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		this.connections[0].pos = new Vector(x, y + this.radius);
+	}
+
+	@Override
+	public void draw(PApplet applet) {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		if (this.on) { applet.fill(200); }
+		else { applet.fill(100); }
+
+		if (this.selected) { applet.stroke(255, 20, 20); }
+		else { applet.noStroke(); }
+		applet.circle(x, y, this.radius * 2);
+		this.connections[0].draw(applet);
+	}
+
+	@Override
+	public void onMousePressed(PApplet applet, float zoom, Vector translate) {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		x = translate.x + x * zoom;
+		y = translate.y + y * zoom;
+		if (PApplet.dist(x, y, applet.mouseX, applet.mouseY) < this.radius * zoom) {
+			this.on = !this.on;
+		}
+	}
+
+	@Override
+	public void update() {
+		if (this.on) {
+			this.connections[0].on();
+		} else {
+			this.connections[0].off();
+		}
+	}
+
+	@Override
+	public boolean isMouseIntersecting(Vector pos, float zoom, Vector translate) {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		x = translate.x + x * zoom;
+		y = translate.y + y * zoom;
+		if (HelperFunctions.isInsideCircle(pos, new Vector(x, y), this.radius * zoom)) {
+			return true;
+		}
+		return false;
+	}
+	
+	@Override
+	public Component copy() {
+		Component c = new Switch(this.pos.copy(), this.posInArray, this.getUUID());
+		c.connections = this.connections;
+		c.selected = this.selected;
+		return c;
+	}
+	
+	public static void onLoad() {
+		hud.addImage("Switch");
+		hud.addNewComponentButton("Switch", "IO");
+	}
+}
+
+package com.cospox.elecsim.components;
+
+import com.cospox.elecsim.Connection;
+import com.cospox.elecsim.ui.hud;
+import com.cospox.elecsim.util.HelperFunctions;
+import com.cospox.elecsim.util.Vector;
+
+import processing.core.PApplet;
+
+public class Joint extends Component {
+	public Joint(Vector pos, int posInArray, long uuid) {
+		super(pos, posInArray, uuid);
+		this.connections = new Connection[1];
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		this.connections[0] = new Connection(new Vector(x, y),
+											 new Vector(posInArray, 0));
+	}
+	
+	@Override
+	public void updateConnectionsPos() {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		this.connections[0].pos = new Vector(x, y);
+	}
+	
+	@Override
+	public void draw(PApplet applet) {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		if (this.connections[0].on) { applet.fill(200); }
+		else { applet.fill(100); }
+		
+		if (this.selected) { applet.stroke(255, 20, 20); }
+		else { applet.noStroke(); }
+		
+		applet.circle(x, y, 8);
+	}
+	
+	@Override
+	public boolean isMouseIntersecting(Vector pos, float zoom, Vector translate) {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		x = translate.x + x * zoom;
+		y = translate.y + y * zoom;
+		return HelperFunctions.isInsideCircle(new Vector(pos.x, pos.y), new Vector(x, y), 6);
+	}
+	
+	@Override
+	public Connection getClickedConnection(Vector pos, float zoom, Vector translate) {
+		if (this.isMouseIntersecting(pos, zoom, translate)) {
+			return this.connections[0];
+		}
+		return null;
+	}
+	
+	@Override
+	public void update() {
+		this.connections[0].off();
+	}
+	
+	@Override
+	public Component copy() {
+		Component c = new Joint(this.pos.copy(), this.posInArray, this.getUUID());
+		c.connections = this.connections;
+		c.selected = this.selected;
+		return c;
+	}
+	
+	public static void onLoad() {
+		hud.addImage("Joint");
+		hud.addNewComponentButton("Joint", "IO");
+	}
+}
+
+package com.cospox.elecsim.components;
+
+import com.cospox.elecsim.Connection;
+import com.cospox.elecsim.ui.hud;
+import com.cospox.elecsim.util.HelperFunctions;
+import com.cospox.elecsim.util.Vector;
+
+import processing.core.PApplet;
+
+public class NotGate extends Component {
+	public NotGate(Vector pos, int posInArray, long uuid) {
+		super(pos, posInArray, uuid);
+		this.connections = new Connection[2];
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		this.connections[0] = new Connection(new Vector(x + 14, y - 10), new Vector(posInArray, 0));
+		this.connections[1] = new Connection(new Vector(x + 14, y + 34), new Vector(posInArray, 1));
+	}
+	
+	@Override
+	public void updateConnectionsPos() {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		this.connections[0].pos = new Vector(x + 14, y - 10);
+		this.connections[1].pos = new Vector(x + 14, y + 34);
+	}
+
+	@Override
+	public void draw(PApplet applet) {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		if (this.selected) { applet.stroke(255, 0, 0); }
+		else { applet.noStroke(); }
+		applet.fill(100);
+		applet.triangle(x, y, x + 30, y, x + 15, y + 30);
+		applet.arc(x + 15, y + 30, 8, 8, (float)-1.11, (float)4.25);
+		for (Connection c: this.connections) {
+			c.draw(applet);
+		}
+	}
+
+	@Override
+	public void update() {
+		boolean on = this.connections[0].on;
+		for (Connection c: this.connections) {
+			c.off();
+		}
+		if (on) {
+			this.connections[1].off();
+		} else {
+			this.connections[1].on();
+		}
+	}
+	
+	@Override
+	public boolean isMouseIntersecting(Vector pos, float zoom, Vector translate) {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		x = translate.x + x * zoom;
+		y = translate.y + y * zoom;
+		if (HelperFunctions.isInsideTriangle(pos,
+				new Vector(x, y),
+				new Vector(x + 30 * zoom, y),
+				new Vector(x + 15 * zoom, y + 30 * zoom))) {
+			return true;
+		}
+		if (HelperFunctions.isInsideCircle(pos, new Vector(x + 15 * zoom, y + 30 * zoom), 8 * zoom)) {
+			return true;
+		}
+		return false;
+	}
+	
+	@Override
+	public Component copy() {
+		Component c = new NotGate(this.pos.copy(), this.posInArray, this.getUUID());
+		c.connections = this.connections;
+		c.selected = this.selected;
+		return c;
+	}
+	
+	public static void onLoad() {
+		hud.addImage("NotGate");
+		hud.addNewComponentButton("NotGate", "BasicGates");
+	}
+}
+
+package com.cospox.elecsim.components;
+
+import com.cospox.elecsim.ui.hud;
+
+public class FlipFlop {
+	//public static void onLoadPriority() {
+	//	hud.addImage("Latch");
+	//	hud.addNewComponentCategory("Latch", "Latch");
+	//}
+}
+
+package com.cospox.elecsim.components;
+
+import com.cospox.elecsim.Connection;
+import com.cospox.elecsim.ui.hud;
+import com.cospox.elecsim.util.HelperFunctions;
+import com.cospox.elecsim.util.Vector;
+
+import processing.core.PApplet;
+import processing.core.PConstants;
+
+public class OrGate extends Component {
+	public OrGate(Vector pos, int posInArray, long uuid) {
+		super(pos, posInArray, uuid);
+		this.connections = new Connection[3];
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		this.connections[0] = new Connection(new Vector(x + 5, y - Connection.HEIGHT + 9), 
+											 new Vector(posInArray, 0)); // input A
+		this.connections[1] = new Connection(new Vector(x + 25 - Connection.WIDTH, y - Connection.HEIGHT + 9),
+											 new Vector(posInArray, 1)); // input B
+		this.connections[2] = new Connection(new Vector(x + 15 - Connection.WIDTH / 2, y + 30), 
+											 new Vector(posInArray, 2)); // output
+	}
+	
+	@Override
+	public void updateConnectionsPos() {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		this.connections[0].pos = new Vector(x + 5, y - Connection.HEIGHT + 9); // input A
+		this.connections[1].pos = new Vector(x + 25 - Connection.WIDTH, y - Connection.HEIGHT + 9); // input B
+		this.connections[2].pos = new Vector(x + 15 - Connection.WIDTH / 2, y + 30);
+	}
+
+	@Override
+	public void draw(PApplet applet) {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		applet.noStroke();
+		applet.fill(100);
+		applet.rect(x, y, 30, 15);
+		if (this.selected) {
+			applet.stroke(255, 20, 20);
+		} else {
+			applet.noStroke();
+		}
+		applet.line(x, y, x, y + 15);
+		applet.line(x + 30, y, x + 30,
+				y + 15);
+		applet.arc(x + 15, y + 15, 30, 30, 0, PConstants.PI,
+				PConstants.OPEN);
+		applet.fill(255);
+		applet.arc(x + 15, y - 4, 30, 30, (float) 0.26,
+				PConstants.PI - (float) 0.26, PConstants.OPEN);
+		for (Connection c : this.connections) {
+			c.draw(applet);
+		}
+	}
+
+	@Override
+	public void update() {
+		boolean output = this.connections[0].on || this.connections[1].on;
+		for (Connection c : this.connections) {
+			c.off();
+		}
+		if (output) {
+			this.connections[2].on();
+		}
+	}
+
+	@Override
+	public boolean isMouseIntersecting(Vector pos, float zoom, Vector translate) {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		x = translate.x + x * zoom;
+		y = translate.y + y * zoom;
+		return HelperFunctions.isInsideRect(pos.x, pos.y, x, y, 30
+				* zoom, 30 * zoom);
+	}
+	
+	@Override
+	public Component copy() {
+		Component c = new OrGate(this.pos.copy(), this.posInArray, this.getUUID());
+		c.connections = this.connections;
+		c.selected = this.selected;
+		return c;
+	}
+	
+	public static void onLoad() {
+		hud.addImage("OrGate");
+		hud.addNewComponentButton("OrGate", "BasicGates");
+	}
+}
+package com.cospox.elecsim.components;
+
+import com.cospox.elecsim.Connection;
+import com.cospox.elecsim.ui.hud;
+import com.cospox.elecsim.util.HelperFunctions;
+import com.cospox.elecsim.util.Vector;
+
+import processing.core.PApplet;
+import processing.core.PConstants;
+
+public class AndGate extends Component {
+	//public boolean first = true;
+	public AndGate(Vector pos, int posInArray, long uuid) {
+		super(pos, posInArray, uuid);
+		this.connections = new Connection[3];
+		
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		
+		this.connections[0] = new Connection(new Vector(x, y - Connection.HEIGHT),
+											 new Vector(posInArray, 0)); //input A
+		this.connections[1] = new Connection(new Vector(x + 30 - Connection.WIDTH, y - Connection.HEIGHT),
+											 new Vector(posInArray, 1)); //input B
+		this.connections[2] = new Connection(new Vector(x + 15 - Connection.WIDTH / 2, y + 30),
+											 new Vector(posInArray, 2)); //output
+	}
+	
+	//run when the application loads
+	public static void onLoad() {
+		hud.addImage("AndGate");
+		hud.addNewComponentButton("AndGate", "BasicGates");
+	}
+	
+	@Override
+	public void updateConnectionsPos() {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		this.connections[0].pos = new Vector(x, y - Connection.HEIGHT);
+		this.connections[1].pos = new Vector(x + 30 - Connection.WIDTH, y - Connection.HEIGHT);
+		this.connections[2].pos = new Vector(x + 15 - Connection.WIDTH / 2, y + 30);
+	}
+
+	@Override
+	public void draw(PApplet applet) {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		int SIZE = 30;
+		/*
+		if (first) {
+			first = false;
+			this.shape = applet.createShape(PConstants.GROUP);
+			this.shape.setFill(applet.color(100));
+			this.shape.setStroke(false);
+			this.shape.addChild(applet.createShape(PConstants.RECT, 0, 0, SIZE, SIZE / 2));
+			this.shape.addChild(applet.createShape(PConstants.ARC, SIZE / 2, SIZE / 2, SIZE, SIZE, 0, PConstants.PI));
+			
+			if (this.selected) {
+				this.shape.setStroke(applet.color(255, 20, 20));
+				this.shape.addChild(applet.createShape(PConstants.LINE, 0, 0, SIZE, 0));
+				this.shape.addChild(applet.createShape(PConstants.LINE, 0, 0, 0, SIZE / 2));
+				this.shape.addChild(applet.createShape(PConstants.LINE, SIZE, 0, SIZE, SIZE / 2));
+
+				this.shape.setFill(false);
+				this.shape.addChild(applet.createShape(PConstants.ARC, SIZE / 2, SIZE / 2, SIZE, SIZE, 0, PConstants.PI));
+			}
+		}
+		PGraphics graphics = applet.createGraphics(50, 50, PConstants.P2D);
+		graphics.beginDraw();
+		graphics.rotate((float)Math.toRadians(this.rotationDegrees));
+		graphics.background(255);
+		graphics.noStroke();
+		graphics.fill(100);
+		graphics.rect(0, 0, SIZE, SIZE / 2);
+		graphics.arc(SIZE / 2, SIZE / 2, SIZE, SIZE, 0, PConstants.PI);
+		
+		if (this.selected) { graphics.stroke(255, 20, 20); }
+		graphics.line(0, 0, SIZE, 0);
+		graphics.line(0, 0, 0, SIZE / 2);
+		graphics.line(SIZE, 0, SIZE, SIZE / 2);
+		graphics.noFill();
+		graphics.arc(SIZE / 2, SIZE / 2, SIZE, SIZE, 0, PConstants.PI);
+		graphics.endDraw();
+		applet.image(graphics, x, y);
+		*/
+		applet.noStroke();
+		applet.fill(100);
+		applet.rect(x, y, SIZE, SIZE / 2);
+		applet.arc(x + SIZE / 2, y + SIZE / 2, SIZE, SIZE, 0, PConstants.PI);
+		
+		if (this.selected) { applet.stroke(255, 20, 20); }
+		applet.line(x, y, x + SIZE, y);
+		applet.line(x, y, x, y + SIZE / 2);
+		applet.line(x + SIZE, y, x + SIZE, y + SIZE / 2);
+		applet.noFill();
+		applet.arc(x + SIZE / 2, y + SIZE / 2, SIZE, SIZE, 0, PConstants.PI);
+		//this.shape.rotate((float)Math.toRadians(this.rotationDegrees));
+		//applet.shape(this.shape, x, y);
+		for (Connection c: this.connections) {
+			c.draw(applet);
+		}
+	}
+	
+//	@Override
+//	public void rotate(int degrees) {
+//		this.shape.rotate((float) Math.toRadians(degrees));
+//	}
+
+	@Override
+	public void update() {
+		boolean output = this.connections[0].on && this.connections[1].on;
+		for (Connection c: this.connections) {
+			c.off();
+		}
+		if (output) {
+			this.connections[2].on();
+		}
+	}
+
+	@Override
+	public boolean isMouseIntersecting(Vector pos, float zoom, Vector translate) {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		x = translate.x + x * zoom;
+		y = translate.y + y * zoom;
+		return HelperFunctions.isInsideRect(pos.x, pos.y, x, y, 30 * zoom, 30 * zoom);
+	}
+	
+	@Override
+	public Component copy() {
+		Component c = new AndGate(this.pos.copy(), this.posInArray, this.getUUID());
+		c.connections = this.connections; //TODO cannot copy connections (because wires) but they don't move with component
+		c.selected = this.selected;
+		return c;
+	}
+}
+
+package com.cospox.elecsim.components;
+
+import java.util.HashMap;
+
+import com.cospox.elecsim.Connection;
+import com.cospox.elecsim.ui.hud;
+import com.cospox.elecsim.util.HelperFunctions;
+import com.cospox.elecsim.util.Vector;
+
+import processing.core.PApplet;
+
+public class Component {
+	public Vector pos;
+	public boolean selected = false;
+	public Connection[] connections;
+	public int posInArray;
+	public int rotationDegrees = 0;
+	private long UUID = 0;
+	//public PShape shape;
+	
+	public HashMap<String, Object> externalFlags = new HashMap<String, Object>();
+	public Component(Vector pos, int posInArray, long uuid) {
+		this.UUID = uuid;
+		this.pos = pos;
+		this.posInArray = posInArray;
+	}
+
+	public Connection getConnections(int index) {
+		return this.connections[index];
+	}
+
+	public boolean isMouseIntersecting(Vector mousePos, float zoom, Vector translate) { return false; }
+	public void draw(PApplet applet) {}
+	public void update() {}
+	public void onMousePressed(PApplet applet, float zoom, Vector translate) {}
+
+	public Connection getClickedConnection(Vector pos, float zoom, Vector translate) {
+		for (Connection c: this.connections) {
+			float cx = translate.x + c.pos.x * zoom;
+			float cy = translate.y + c.pos.y * zoom;
+			float cw = Connection.WIDTH  * zoom;
+			float ch = Connection.HEIGHT * zoom;
+			if (HelperFunctions.isInsideRect(pos.x, pos.y, cx, cy, cw, ch)) {
+				return c;
+			}
+		}
+		return null;
+	}
+	public void setX(float x) {
+		this.pos.x = x;
+		this.updateConnectionsPos();
+	}
+
+	public void setY(float y) {
+		this.pos.y = y;
+		this.updateConnectionsPos();
+	}
+
+	public void select() {
+		this.selected = true;
+		for (Connection c: this.connections) {
+			c.selected = true;
+		}
+	}
+
+	public void deSelect() {
+		this.selected = false;
+		for (Connection c: this.connections) {
+			c.selected = false;
+		}
+	}
+	
+	public Component copy() {
+		return null;
+	}
+
+	public void updateConnectionsPos() {
+	}
+
+	public static void onLoadPriority() {
+		hud.addImage("BasicGates");
+		hud.addImage("IO");
+		hud.addNewComponentCategory("Gates", "BasicGates");
+		hud.addNewComponentCategory("IO", "IO");
+	}
+	
+	public long getUUID() {
+		return this.UUID;
+	}
+	
+//	public void rotate(int degrees) {
+//		this.rotationDegrees += degrees;
+//	}
+}
+
+package com.cospox.elecsim.components;
+
+import com.cospox.elecsim.Connection;
+import com.cospox.elecsim.ui.hud;
+import com.cospox.elecsim.util.HelperFunctions;
+import com.cospox.elecsim.util.Vector;
+
+import processing.core.PApplet;
+
+public class IC extends Component {
+	
+	protected int numPins;
+	private final static int HEIGHT = 30;
+	private final static int PIN_SPACING = 7;
+	private final static boolean DRAW_PIN_NUMBERS = false;
+	
+	public IC(Vector pos, int posInArray, long uuid) {
+		super(pos, posInArray, uuid);
+		this.numPins = numPins;
+		
+		if (this.numPins % 2 != 0) {
+			throw new IllegalArgumentException("Number of pins must be divisible by two");
+		}
+		
+		this.connections = new Connection[numPins];
+		for (int i = 0; i < numPins; i++) {
+			this.connections[i] = new Connection(new Vector(), new Vector(posInArray, i));
+		}
+		this.updateConnectionsPos();
+	}
+	
+	@Override
+	public void draw(PApplet applet) {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		applet.fill(0);
+		applet.stroke(0, 255, 0);
+		applet.rect(x, y, (this.numPins - 1) * PIN_SPACING, HEIGHT);
+		int i = 0;
+		for (Connection c: this.connections) {
+			c.draw(applet);
+			if (DRAW_PIN_NUMBERS) {
+				applet.fill(0, 0, 255);
+				applet.stroke(255, 0, 0);
+				applet.text(Integer.toString(i), c.pos.x, c.pos.y);
+				i++;
+			}
+		}
+	}
+	
+	@Override
+	public void updateConnectionsPos() {
+
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		
+		float OFFSET = PIN_SPACING / 2;
+		
+		//I don't know why this works, but it does
+		for (int i = 0; i < numPins / 2; i++) {
+			this.connections[i].pos = new Vector(x + OFFSET + (i * 2) * PIN_SPACING,
+					                             y + HEIGHT);
+		}
+		
+		for (int i = numPins / 2; i < numPins; i++) {
+			this.connections[numPins - (i - numPins / 2 + 1)].pos = new Vector(x + OFFSET + (i - numPins / 2) * 2 * PIN_SPACING,
+					                             y - Connection.HEIGHT);
+		}
+	}
+	
+	@Override
+	public boolean isMouseIntersecting(Vector pos, float zoom, Vector translate) {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		x = translate.x + x * zoom;
+		y = translate.y + y * zoom;
+		return HelperFunctions.isInsideRect(pos.x, pos.y, x, y, (this.numPins - 1) * PIN_SPACING * zoom, HEIGHT * zoom);
+	}
+	
+	public static void onLoadPriority() {
+		hud.addImage("ICs");
+		hud.addNewComponentCategory("ICs", "ICs");
+	}
+}
+
+package com.cospox.elecsim.components;
+
+import com.cospox.elecsim.Connection;
+import com.cospox.elecsim.ui.hud;
+import com.cospox.elecsim.util.HelperFunctions;
+import com.cospox.elecsim.util.Vector;
+
+import processing.core.PApplet;
+
+public class HighSource extends Component {
+	public HighSource(Vector pos, int posInArray, long uuid) {
+		super(pos, posInArray, uuid);
+		this.connections = new Connection[1];
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		this.connections[0] = new Connection(new Vector(x + 15 - Connection.WIDTH / 2.0F, y + 20),
+											 new Vector(posInArray, 0)); //output
+	}
+	
+	@Override
+	public void updateConnectionsPos() {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		this.connections[0].pos = new Vector(x + 15 - Connection.WIDTH / 2.0F, y + 20);
+	}
+
+	@Override
+	public void draw(PApplet applet) {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		if (this.selected) { applet.stroke(255, 20, 20); }
+		else { applet.noStroke(); }
+		
+		float T_HEIGHT = applet.textAscent() + applet.textDescent();
+		
+		applet.fill(100);
+		applet.rect(x, y, 30, 20);
+		//applet.textSize(10);
+		applet.fill(20);
+		applet.text("1", x + 12, y + T_HEIGHT - 12);
+		//applet.textSize(11.9F);
+		for (Connection c: this.connections) {
+			c.draw(applet);
+		}
+	}
+
+	@Override
+	public void update() {
+		this.connections[0].on();
+	}
+
+	@Override
+	public boolean isMouseIntersecting(Vector pos, float zoom, Vector translate) {
+		float x = HelperFunctions.snap(this.pos.x);
+		float y = HelperFunctions.snap(this.pos.y);
+		x = translate.x + x * zoom;
+		y = translate.y + y * zoom;
+		return HelperFunctions.isInsideRect(pos.x, pos.y, x, y, 30 * zoom, 20 * zoom);
+	}
+	
+	@Override
+	public Component copy() {
+		//change class from ComponentTemplate
+		Component c = new HighSource(this.pos.copy(), this.posInArray, this.getUUID());
+		c.connections = this.connections; //TODO cannot copy connections (because wires) but they don't move with component
+		c.selected = this.selected;
+		return c;
+	}
+	
+	public static void onLoad() {
+		hud.addImage("HighSource");
+		hud.addNewComponentButton("HighSource", "IO");
 	}
 }
 

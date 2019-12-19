@@ -8,8 +8,8 @@ import com.cospox.elecsim.util.Vector;
 import processing.core.PApplet;
 
 public class Joint extends Component {
-	public Joint(Vector pos, int posInArray) {
-		super(pos, posInArray);
+	public Joint(Vector pos, int posInArray, long uuid) {
+		super(pos, posInArray, uuid);
 		this.connections = new Connection[1];
 		float x = HelperFunctions.snap(this.pos.x);
 		float y = HelperFunctions.snap(this.pos.y);
@@ -61,7 +61,7 @@ public class Joint extends Component {
 	
 	@Override
 	public Component copy() {
-		Component c = new Joint(this.pos.copy(), this.posInArray);
+		Component c = new Joint(this.pos.copy(), this.posInArray, this.getUUID());
 		c.connections = this.connections;
 		c.selected = this.selected;
 		return c;

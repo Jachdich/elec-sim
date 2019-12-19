@@ -14,8 +14,8 @@ public class IC extends Component {
 	private final static int PIN_SPACING = 7;
 	private final static boolean DRAW_PIN_NUMBERS = false;
 	
-	public IC(Vector pos, int numPins, int posInArray) {
-		super(pos, posInArray);
+	public IC(Vector pos, int numPins, int posInArray, long uuid) {
+		super(pos, posInArray, uuid);
 		this.numPins = numPins;
 		
 		if (this.numPins % 2 != 0) {

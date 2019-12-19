@@ -14,9 +14,13 @@ public class Component {
 	public boolean selected = false;
 	public Connection[] connections;
 	public int posInArray;
+	public int rotationDegrees = 0;
+	private long UUID = 0;
+	//public PShape shape;
 	
 	public HashMap<String, Object> externalFlags = new HashMap<String, Object>();
-	public Component(Vector pos, int posInArray) {
+	public Component(Vector pos, int posInArray, long uuid) {
+		this.UUID = uuid;
 		this.pos = pos;
 		this.posInArray = posInArray;
 	}
@@ -43,19 +47,11 @@ public class Component {
 		return null;
 	}
 	public void setX(float x) {
-		//for (Connection c: this.connections) {
-		//	c.pos.x += x - this.pos.x;
-		//}
-		
 		this.pos.x = x;
 		this.updateConnectionsPos();
 	}
 
 	public void setY(float y) {
-		//for (Connection c: this.connections) {
-		//	c.pos.y += y - this.pos.y;
-		//}
-		
 		this.pos.y = y;
 		this.updateConnectionsPos();
 	}
@@ -87,5 +83,12 @@ public class Component {
 		hud.addNewComponentCategory("Gates", "BasicGates");
 		hud.addNewComponentCategory("IO", "IO");
 	}
-
+	
+	public long getUUID() {
+		return this.UUID;
+	}
+	
+//	public void rotate(int degrees) {
+//		this.rotationDegrees += degrees;
+//	}
 }

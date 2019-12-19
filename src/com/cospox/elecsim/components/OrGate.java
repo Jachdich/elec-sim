@@ -9,8 +9,8 @@ import processing.core.PApplet;
 import processing.core.PConstants;
 
 public class OrGate extends Component {
-	public OrGate(Vector pos, int posInArray) {
-		super(pos, posInArray);
+	public OrGate(Vector pos, int posInArray, long uuid) {
+		super(pos, posInArray, uuid);
 		this.connections = new Connection[3];
 		float x = HelperFunctions.snap(this.pos.x);
 		float y = HelperFunctions.snap(this.pos.y);
@@ -79,7 +79,7 @@ public class OrGate extends Component {
 	
 	@Override
 	public Component copy() {
-		Component c = new OrGate(this.pos.copy(), this.posInArray);
+		Component c = new OrGate(this.pos.copy(), this.posInArray, this.getUUID());
 		c.connections = this.connections;
 		c.selected = this.selected;
 		return c;

@@ -230,7 +230,7 @@ public class hud {
 		if (pos.x >= winSize.x - 30 && pos.y <= 80) { return true; } //top right menu
 		if (pos.x < 4 + 32 * NUM_COMPONENTS &&
 			pos.x >= 0 &&
-			pos.y >= winSize.y - 32 * (hud.categoriesOpen + 1) &&
+			pos.y >= winSize.y - 32 * (hud.categoriesOpen + 2) &&
 			pos.y <= winSize.y) { return true; } //bottom left menu
 		return false;
 	}

@@ -8,8 +8,8 @@ import com.cospox.elecsim.util.Vector;
 import processing.core.PApplet;
 
 public class NotGate extends Component {
-	public NotGate(Vector pos, int posInArray) {
-		super(pos, posInArray);
+	public NotGate(Vector pos, int posInArray, long uuid) {
+		super(pos, posInArray, uuid);
 		this.connections = new Connection[2];
 		float x = HelperFunctions.snap(this.pos.x);
 		float y = HelperFunctions.snap(this.pos.y);
@@ -72,7 +72,7 @@ public class NotGate extends Component {
 	
 	@Override
 	public Component copy() {
-		Component c = new NotGate(this.pos.copy(), this.posInArray);
+		Component c = new NotGate(this.pos.copy(), this.posInArray, this.getUUID());
 		c.connections = this.connections;
 		c.selected = this.selected;
 		return c;

@@ -74,7 +74,14 @@ public final class OnLoadManager {
         
         final Map<String, String> env = new HashMap<>();
         final String[] array = element.toURI().toString().split("!");
-        final FileSystem fs = FileSystems.newFileSystem(URI.create(array[0]), env);
+        URI uri = URI.create(array[0]);
+        FileSystem fs;
+        if (FileSystems.getFileSystem(uri).isOpen()){
+        	fs = FileSystems.getFileSystem(uri);
+        } else {
+        	fs = FileSystems.newFileSystem(uri, env);
+        }
+        //final FileSystem fs = FileSystems.newFileSystem(URI.create(array[0]), env);
         final Path path = fs.getPath(array[1]);
 
 		return path;

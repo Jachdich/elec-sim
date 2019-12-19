@@ -19,8 +19,6 @@
  *WE NEED A FUDGING SETTINGS MENU - Possibly consider second window, or even seperate library to make it look profesh.
  *
  *Add 'changes were made do u want to save pwese' on file open #16
- *Fix the damn and gate red outline! #18 ITS FUGGIN FIXED!!!
- *failsafe for opening multiple save dialogs or similar 
  *When selecting component, first time does not show wire to mouse #11 NEEDS VERIFICATION VERIFIED, not just first time (snap to grid created issue)
  *In wire mode false, wire click detection is slightly off #19
  *Minor visual bug where sometimes the wrong/no connections outlined in red NEEDS VERIFICATION --sorta-verified
@@ -104,6 +102,8 @@ public class Game {
 	
 	public static float FONT_HEIGHT;
 	
+	private int framesSinceMouseMove = 0;
+	
 	public Game(PApplet applet) {
 		this.parent = applet;
 		this.hud = new hud(applet);
@@ -133,6 +133,7 @@ public class Game {
 		this.states.put("exitAfterSave", false);
 		this.states.put("halt", false);
 		this.states.put("draggingComponents", false);
+		this.states.put("dialogueOpen", false);
 		if (this.states.get("pathError") == null) {
 			this.states.put("pathError", false);
 		}
@@ -209,6 +210,7 @@ public class Game {
 					adjusted_x < applet.width + 60 * this.zoom &&
 					adjusted_y > -60 * this.zoom &&
 					adjusted_y < applet.height + 60 * this.zoom) {
+				//applet.rotate((float) Math.toRadians(applet.frameCount / 5 % 360));
 				c.draw(applet);
 			}	
 		}
@@ -235,6 +237,18 @@ public class Game {
 			applet.text("Cancel", applet.width / 2 + px - 8, applet.height / 2 + py + 52);
 			applet.textSize(12);
 		}
+		
+		if (applet.mouseX == applet.pmouseX && applet.mouseY == applet.pmouseY) {
+			this.framesSinceMouseMove += 1;
+			if (this.framesSinceMouseMove == 60) {
+				this.onMouseHover();
+			}
+		} else {
+			if (this.framesSinceMouseMove > 60) {
+				this.unMouseHover();
+			}
+			this.framesSinceMouseMove = 0;
+		}
 	}
 	
 	public boolean dispose() {
@@ -247,6 +261,15 @@ public class Game {
 			this.promptToSave();
 			return false;
 		} else { return true; }
+	}
+	
+	public Component getComponentByUUID(long uuid) {
+		for (Component c: this.components) {
+			if (c.getUUID() == uuid) {
+				return c;
+			}
+		}
+		return null;
 	}
 	
 	public void setWireMode(boolean mode) {
@@ -269,15 +292,22 @@ public class Game {
 	}
 	
 	public void saveAs() {
-		this.parent.selectOutput("Select file...", "saveAsCallback", null, this);
+		if (!this.states.get("dialogueOpen")) {
+			this.parent.selectOutput("Select file...", "saveAsCallback", null, this);
+			this.states.put("dialogueOpen", true);
+		}
 	}
 	
 	public void open() {
 		//TODO prompt to save
-		this.parent.selectInput("Select file...", "openFileCallback", null, this);
+		if (!this.states.get("dialogueOpen")) {
+			this.parent.selectInput("Select file...", "openFileCallback", null, this);
+			this.states.put("dialogueOpen", true);
+		}
 	}
 	
 	public void saveAsCallback(File selection) {
+		this.states.put("dialogueOpen", false);
 		if (selection == null) { return; }
 		String fileName = selection.getAbsoluteFile().toString();
 		this.saveToFile(fileName);
@@ -289,6 +319,7 @@ public class Game {
 	}
 	
 	public void openFileCallback(File selection) {
+		this.states.put("dialogueOpen", false);
 		if (selection == null) { return; }
 		String fileName = selection.getAbsoluteFile().toString();
 		this.states.put("halt", true);
@@ -395,7 +426,7 @@ public class Game {
 			if (line == "") { continue; }
 			switch (line.split("\\(")[0]) {
 			case "Wire":
-				this.wires.add(ComponentEncoder.unpackWireCall(line, this.components));
+				this.wires.add(ComponentEncoder.unpackWireCall(line, this));
 				break;
 			default:
 				this.components.add(ComponentEncoder.unpackComponentCall(line, this.components));
@@ -681,6 +712,14 @@ public class Game {
 
 		this.componentInteraction(applet);
 	}
+	
+	public void onMouseHover() {
+		System.out.println("hovered");
+	}
+	
+	public void unMouseHover() {
+		System.out.println("unhovered");
+	}
 
 	public void mouseDragged(MouseEvent event, PApplet applet) {
 		//if it's the right click button then pan
@@ -752,6 +791,7 @@ public class Game {
 		if (this.keys.ctrl() && !this.keys.shift() && this.keys.get(78)) { this.newFile(); }				//ctrl+n = new
 		
 		if (this.keys.get('b')) { this.breakFunc(); } //break on demand
+		//if (this.keys.get('g')) { this.components.get(0).rotate(15); }
 		//if (this.keys.get('r')) { this.addNewComponent("AT28C256", new Vector()); }
 		
 		if (this.keys.get('y') && !this.keys.shift() && !this.keys.ctrl()) {								//y = switch wire mode

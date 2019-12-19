@@ -14,8 +14,8 @@ public class AT28C256 extends IC {
 	private boolean previousWE;
 	private boolean previousCE;
 	
-	public AT28C256(Vector pos, int posInArray) {
-		super(pos, 28, posInArray);
+	public AT28C256(Vector pos, int posInArray, int uuid) {
+		super(pos, 28, posInArray, uuid);
 
 	}
 	

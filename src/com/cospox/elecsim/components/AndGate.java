@@ -9,8 +9,9 @@ import processing.core.PApplet;
 import processing.core.PConstants;
 
 public class AndGate extends Component {
-	public AndGate(Vector pos, int posInArray) {
-		super(pos, posInArray);
+	//public boolean first = true;
+	public AndGate(Vector pos, int posInArray, long uuid) {
+		super(pos, posInArray, uuid);
 		this.connections = new Connection[3];
 		
 		float x = HelperFunctions.snap(this.pos.x);
@@ -44,6 +45,43 @@ public class AndGate extends Component {
 		float x = HelperFunctions.snap(this.pos.x);
 		float y = HelperFunctions.snap(this.pos.y);
 		int SIZE = 30;
+		/*
+		if (first) {
+			first = false;
+			this.shape = applet.createShape(PConstants.GROUP);
+			this.shape.setFill(applet.color(100));
+			this.shape.setStroke(false);
+			this.shape.addChild(applet.createShape(PConstants.RECT, 0, 0, SIZE, SIZE / 2));
+			this.shape.addChild(applet.createShape(PConstants.ARC, SIZE / 2, SIZE / 2, SIZE, SIZE, 0, PConstants.PI));
+			
+			if (this.selected) {
+				this.shape.setStroke(applet.color(255, 20, 20));
+				this.shape.addChild(applet.createShape(PConstants.LINE, 0, 0, SIZE, 0));
+				this.shape.addChild(applet.createShape(PConstants.LINE, 0, 0, 0, SIZE / 2));
+				this.shape.addChild(applet.createShape(PConstants.LINE, SIZE, 0, SIZE, SIZE / 2));
+
+				this.shape.setFill(false);
+				this.shape.addChild(applet.createShape(PConstants.ARC, SIZE / 2, SIZE / 2, SIZE, SIZE, 0, PConstants.PI));
+			}
+		}
+		PGraphics graphics = applet.createGraphics(50, 50, PConstants.P2D);
+		graphics.beginDraw();
+		graphics.rotate((float)Math.toRadians(this.rotationDegrees));
+		graphics.background(255);
+		graphics.noStroke();
+		graphics.fill(100);
+		graphics.rect(0, 0, SIZE, SIZE / 2);
+		graphics.arc(SIZE / 2, SIZE / 2, SIZE, SIZE, 0, PConstants.PI);
+		
+		if (this.selected) { graphics.stroke(255, 20, 20); }
+		graphics.line(0, 0, SIZE, 0);
+		graphics.line(0, 0, 0, SIZE / 2);
+		graphics.line(SIZE, 0, SIZE, SIZE / 2);
+		graphics.noFill();
+		graphics.arc(SIZE / 2, SIZE / 2, SIZE, SIZE, 0, PConstants.PI);
+		graphics.endDraw();
+		applet.image(graphics, x, y);
+		*/
 		applet.noStroke();
 		applet.fill(100);
 		applet.rect(x, y, SIZE, SIZE / 2);
@@ -55,11 +93,17 @@ public class AndGate extends Component {
 		applet.line(x + SIZE, y, x + SIZE, y + SIZE / 2);
 		applet.noFill();
 		applet.arc(x + SIZE / 2, y + SIZE / 2, SIZE, SIZE, 0, PConstants.PI);
-		
+		//this.shape.rotate((float)Math.toRadians(this.rotationDegrees));
+		//applet.shape(this.shape, x, y);
 		for (Connection c: this.connections) {
 			c.draw(applet);
 		}
 	}
+	
+//	@Override
+//	public void rotate(int degrees) {
+//		this.shape.rotate((float) Math.toRadians(degrees));
+//	}
 
 	@Override
 	public void update() {
@@ -83,7 +127,7 @@ public class AndGate extends Component {
 	
 	@Override
 	public Component copy() {
-		Component c = new AndGate(this.pos.copy(), this.posInArray);
+		Component c = new AndGate(this.pos.copy(), this.posInArray, this.getUUID());
 		c.connections = this.connections; //TODO cannot copy connections (because wires) but they don't move with component
 		c.selected = this.selected;
 		return c;

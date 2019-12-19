@@ -6,8 +6,8 @@ import com.cospox.elecsim.components.Component;
 import processing.core.PApplet;
 
 public class ComponentTemplate extends Component {
-	public ComponentTemplate(Vector pos, int posInArray) {
-		super(pos, posInArray);
+	public ComponentTemplate(Vector pos, int posInArray, long uuid) {
+		super(pos, posInArray, uuid);
 		this.connections = new Connection[1];
 		this.connections[0] = new Connection(new Vector(this.pos.x, this.pos.y - Connection.HEIGHT),
 											 new Vector(posInArray, 0)); //input A
@@ -50,7 +50,7 @@ public class ComponentTemplate extends Component {
 	@Override
 	public Component copy() {
 		//change class from ComponentTemplate
-		Component c = new ComponentTemplate(this.pos.copy(), this.posInArray);
+		Component c = new ComponentTemplate(this.pos.copy(), this.posInArray, this.getUUID());
 		c.connections = this.connections; //TODO cannot copy connections (because wires) but they don't move with component
 		c.selected = this.selected;
 		return c;
