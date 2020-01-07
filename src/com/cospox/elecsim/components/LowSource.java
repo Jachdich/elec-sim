@@ -8,13 +8,13 @@ import com.cospox.elecsim.util.Vector;
 import processing.core.PApplet;
 
 public class LowSource extends Component {
-	public LowSource(Vector pos, int posInArray, long uuid) {
-		super(pos, posInArray, uuid);
+	public LowSource(Vector pos, long uuid) {
+		super(pos, uuid);
 		this.connections = new Connection[1];
 		float x = HelperFunctions.snap(this.pos.x);
 		float y = HelperFunctions.snap(this.pos.y);
 		this.connections[0] = new Connection(new Vector(x + 15 - Connection.WIDTH / 2.0F, y + 20),
-											 new Vector(posInArray, 0)); //output
+											 new Vector(uuid, 0)); //output
 	}
 	
 	@Override
@@ -59,7 +59,7 @@ public class LowSource extends Component {
 	@Override
 	public Component copy() {
 		//change class from ComponentTemplate
-		Component c = new LowSource(this.pos.copy(), this.posInArray, this.getUUID());
+		Component c = new LowSource(this.pos.copy(), this.getUUID());
 		c.connections = this.connections; //TODO cannot copy connections (because wires) but they don't move with component
 		c.selected = this.selected;
 		return c;

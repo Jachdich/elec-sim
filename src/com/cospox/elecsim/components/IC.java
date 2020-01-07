@@ -14,8 +14,8 @@ public class IC extends Component {
 	private final static int PIN_SPACING = 7;
 	private final static boolean DRAW_PIN_NUMBERS = false;
 	
-	public IC(Vector pos, int numPins, int posInArray, long uuid) {
-		super(pos, posInArray, uuid);
+	public IC(Vector pos, int numPins, long uuid) {
+		super(pos, uuid);
 		this.numPins = numPins;
 		
 		if (this.numPins % 2 != 0) {
@@ -24,7 +24,7 @@ public class IC extends Component {
 		
 		this.connections = new Connection[numPins];
 		for (int i = 0; i < numPins; i++) {
-			this.connections[i] = new Connection(new Vector(), new Vector(posInArray, i));
+			this.connections[i] = new Connection(new Vector(), new Vector(uuid, i));
 		}
 		this.updateConnectionsPos();
 	}

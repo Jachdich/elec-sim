@@ -396,7 +396,7 @@ public class Game {
 			file += ComponentEncoder.componentToString(c) + "\n";
 		}
 		for (Wire w: this.wires) {
-			file += ComponentEncoder.wireToString(w) + "\n";
+			file += ComponentEncoder.wireToString(w, this) + "\n";
 		}
 		return file;
 	}
@@ -839,5 +839,13 @@ public class Game {
 		int xasd = 0;
 		xasd += 1;
 		System.out.println(xasd);
+	}
+
+	public boolean isOrphand(Wire w) {
+		if (!this.components.contains(w.refe) || !this.components.contains(w.refs)) {
+			//this.wires.remove(w);
+			return true;
+		}
+		return false;
 	}
 }

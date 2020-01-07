@@ -9,17 +9,17 @@ import processing.core.PApplet;
 import processing.core.PConstants;
 
 public class OrGate extends Component {
-	public OrGate(Vector pos, int posInArray, long uuid) {
-		super(pos, posInArray, uuid);
+	public OrGate(Vector pos, long uuid) {
+		super(pos, uuid);
 		this.connections = new Connection[3];
 		float x = HelperFunctions.snap(this.pos.x);
 		float y = HelperFunctions.snap(this.pos.y);
 		this.connections[0] = new Connection(new Vector(x + 5, y - Connection.HEIGHT + 9), 
-											 new Vector(posInArray, 0)); // input A
+											 new Vector(uuid, 0)); // input A
 		this.connections[1] = new Connection(new Vector(x + 25 - Connection.WIDTH, y - Connection.HEIGHT + 9),
-											 new Vector(posInArray, 1)); // input B
+											 new Vector(uuid, 1)); // input B
 		this.connections[2] = new Connection(new Vector(x + 15 - Connection.WIDTH / 2, y + 30), 
-											 new Vector(posInArray, 2)); // output
+											 new Vector(uuid, 2)); // output
 	}
 	
 	@Override
@@ -79,7 +79,7 @@ public class OrGate extends Component {
 	
 	@Override
 	public Component copy() {
-		Component c = new OrGate(this.pos.copy(), this.posInArray, this.getUUID());
+		Component c = new OrGate(this.pos.copy(), this.getUUID());
 		c.connections = this.connections;
 		c.selected = this.selected;
 		return c;

@@ -13,16 +13,15 @@ public class Component {
 	public Vector pos;
 	public boolean selected = false;
 	public Connection[] connections;
-	public int posInArray;
 	public int rotationDegrees = 0;
 	private long UUID = 0;
 	//public PShape shape;
 	
 	public HashMap<String, Object> externalFlags = new HashMap<String, Object>();
-	public Component(Vector pos, int posInArray, long uuid) {
+	
+	public Component(Vector pos, long uuid) {
 		this.UUID = uuid;
 		this.pos = pos;
-		this.posInArray = posInArray;
 	}
 
 	public Connection getConnections(int index) {

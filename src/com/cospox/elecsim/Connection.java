@@ -10,11 +10,11 @@ public class Connection {
 	public boolean selected;
 	public static int WIDTH  = 2;
 	public static int HEIGHT = 10;
-	public int posInComponents;
+	public int parentUUID;
 	public int posInComponent;
 	public Connection(Vector pos, Vector posInArrays) {
 		this.pos = pos;
-		this.posInComponents = (int)posInArrays.x;
+		this.parentUUID = (int)posInArrays.x;
 		this.posInComponent  = (int)posInArrays.y;
 	}
 

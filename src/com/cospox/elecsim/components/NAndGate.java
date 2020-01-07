@@ -8,9 +8,9 @@ import com.cospox.elecsim.util.Vector;
 import processing.core.PApplet;
 import processing.core.PConstants;
 
-public class AndGate extends Component {
+public class NAndGate extends Component {
 	//public boolean first = true;
-	public AndGate(Vector pos, long uuid) {
+	public NAndGate(Vector pos, long uuid) {
 		super(pos, uuid);
 		this.connections = new Connection[3];
 		
@@ -27,8 +27,8 @@ public class AndGate extends Component {
 	
 	//run when the application loads
 	public static void onLoad() {
-		hud.addImage("AndGate");
-		hud.addNewComponentButton("AndGate", "BasicGates");
+		hud.addImage("NAndGate");
+		hud.addNewComponentButton("NAndGate", "BasicGates");
 	}
 	
 	@Override
@@ -86,6 +86,7 @@ public class AndGate extends Component {
 		applet.fill(100);
 		applet.rect(x, y, SIZE, SIZE / 2);
 		applet.arc(x + SIZE / 2, y + SIZE / 2, SIZE, SIZE, 0, PConstants.PI);
+		applet.circle(x + SIZE / 2, y + SIZE, 5);
 		
 		if (this.selected) { applet.stroke(255, 20, 20); }
 		applet.line(x, y, x + SIZE, y);
@@ -107,7 +108,7 @@ public class AndGate extends Component {
 
 	@Override
 	public void update() {
-		boolean output = this.connections[0].on && this.connections[1].on;
+		boolean output = !(this.connections[0].on && this.connections[1].on);
 		for (Connection c: this.connections) {
 			c.off();
 		}
@@ -127,7 +128,7 @@ public class AndGate extends Component {
 	
 	@Override
 	public Component copy() {
-		Component c = new AndGate(this.pos.copy(), this.getUUID());
+		Component c = new NAndGate(this.pos.copy(), this.getUUID());
 		c.connections = this.connections; //TODO cannot copy connections (because wires) but they don't move with component
 		c.selected = this.selected;
 		return c;

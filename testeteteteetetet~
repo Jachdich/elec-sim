@@ -1,0 +1,16 @@
+AndGate(new Vector(214.0, 395.0),0);
+AndGate(new Vector(222.29727, 202.07776),1);
+AndGate(new Vector(214.60326, 298.58926),2);
+AndGate(new Vector(281.0, 98.0),3);
+AndGate(new Vector(488.0, 150.0),4);
+AndGate(new Vector(447.0, 296.0,5);
+AndGate(new Vector(431.0, 360.0),6);
+AndGate(new Vector(403.0, 437.0),7);
+Wire([1 0],[3 2]);
+Wire([0 0],[2 2]);
+Wire([0 2],[7 2]);
+Wire([1 2],[2 0]);
+Wire([6 2],[7 1]);
+Wire([5 2],[6 1]);
+Wire([5 1],[4 2]);
+Wire([4 0],[3 1]);

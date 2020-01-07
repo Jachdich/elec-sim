@@ -51,7 +51,7 @@ public class Wire {
 	}
 	
 	public String getPosition(Connection c) {
-		return Integer.toString(c.posInComponents) + " " +  Integer.toString(c.posInComponent);
+		return Integer.toString(c.parentUUID) + " " +  Integer.toString(c.posInComponent);
 	}
 
 	public boolean isMouseIntersecting(PApplet applet, Vector translate, float zoom) {

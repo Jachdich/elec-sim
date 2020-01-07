@@ -27,8 +27,7 @@ public class ComponentEncoder {
 		
 		return new Wire(a.connections[(int)sposy],
 								b.connections[eposy],
-								a,
-								b);
+								a, b);
 	}
 	
 	public static Component unpackComponentCall(String call, ArrayList<Component> components) {
@@ -51,7 +50,10 @@ public class ComponentEncoder {
 		return out;
 	}
 	
-	public static String wireToString(Wire w) {
+	public static String wireToString(Wire w, Game game) {
+		if (game.isOrphand(w)) {
+			return "";
+		}
 		String out = "";
 		out += "Wire(";
 		out += "[" + w.getPosition(w.s) + "],";

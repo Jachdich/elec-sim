@@ -11,13 +11,13 @@ public class Switch extends Component {
 	public boolean on = false;
 	public int radius = 15;
 
-	public Switch(Vector pos, int posInArray, long uuid) {
-		super(pos, posInArray, uuid);
+	public Switch(Vector pos, long uuid) {
+		super(pos, uuid);
 		this.connections = new Connection[1];
 		float x = HelperFunctions.snap(this.pos.x);
 		float y = HelperFunctions.snap(this.pos.y);
 		this.connections[0] = new Connection(new Vector(x, y + this.radius),
-											 new Vector(posInArray, 0));
+											 new Vector(uuid, 0));
 	}
 	
 	@Override
@@ -74,7 +74,7 @@ public class Switch extends Component {
 	
 	@Override
 	public Component copy() {
-		Component c = new Switch(this.pos.copy(), this.posInArray, this.getUUID());
+		Component c = new Switch(this.pos.copy(), this.getUUID());
 		c.connections = this.connections;
 		c.selected = this.selected;
 		return c;

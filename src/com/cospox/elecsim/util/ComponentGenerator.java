@@ -14,8 +14,8 @@ public class ComponentGenerator {
 	
 	public static Component generateNewComponent(String name, Vector pos, int posInArray, long uuid) {
 		try {
-			Constructor<?> ctor = Class.forName("com.cospox.elecsim.components." + name).getConstructor(Vector.class, int.class, long.class);
-			Object object = ctor.newInstance(new Object[] {pos, posInArray, uuid} );
+			Constructor<?> ctor = Class.forName("com.cospox.elecsim.components." + name).getConstructor(Vector.class, long.class);
+			Object object = ctor.newInstance(new Object[] {pos, uuid} );
 			return (Component)object;
 		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 			e.printStackTrace();
